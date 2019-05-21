@@ -1,5 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:BreadSTM32F0-cache
+LIBS:Beats-cache
 EELAYER 29 0
 EELAYER END
 $Descr A3 16535 11693
@@ -1626,14 +1626,12 @@ L 74xx:74HCT244 U3
 U 1 1 5D303C36
 P 12350 2350
 F 0 "U3" H 12350 3331 50  0000 C CNN
-F 1 "74HCT244" H 12350 3240 50  0000 C CNN
+F 1 "74AHCT244" H 12350 3240 50  0000 C CNN
 F 2 "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm" H 12350 2350 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74HC_HCT244.pdf" H 12350 2350 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/1846072.pdf?_ga=2.45164448.56267943.1558354548-1872083180.1540475894" H 12350 2350 50  0001 C CNN
 	1    12350 2350
 	1    0    0    -1  
 $EndComp
-Text Notes 12800 1300 0    50   ~ 0
-FIXME: create alias for 74AHCT244\n
 Text GLabel 11700 1950 0    50   Input ~ 0
 PXX
 Text GLabel 11700 2050 0    50   Input ~ 0
