@@ -24,3 +24,8 @@ _autosave-*
 # Exported BOM files
 *.xml
 *.csv
+
+# Other stuff
+.DS_Store
+*.swp
+_build
