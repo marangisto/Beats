@@ -2570,7 +2570,7 @@ U 1 1 5D2FD3DD
 P 9450 8050
 F 0 "U4" H 9450 8531 50  0000 C CNN
 F 1 "AT25xxx" H 9450 8440 50  0000 C CNN
-F 2 "" H 9450 8050 50  0001 C CNN
+F 2 "Package_SO:TSSOP-8_4.4x3mm_P0.65mm" H 9450 8050 50  0001 C CNN
 F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-8707-SEEPROM-AT25010B-020B-040B-Datasheet.pdf" H 9450 8050 50  0001 C CNN
 	1    9450 8050
 	1    0    0    -1  
