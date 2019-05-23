@@ -2671,4 +2671,12 @@ Wire Wire Line
 	10050 10450 10050 10350
 Connection ~ 9650 9950
 Connection ~ 9650 10450
+Text GLabel 4450 2200 2    50   Input ~ 0
+PC0
+Text GLabel 4450 3950 2    50   Input ~ 0
+PC1
+Text GLabel 4450 5700 2    50   Input ~ 0
+PC2
+Text GLabel 4450 7450 2    50   Input ~ 0
+PC3
 $EndSCHEMATC
