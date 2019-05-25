@@ -12,6 +12,7 @@ using namespace st7789;
 using namespace fontlib;
 
 typedef encoder_t<2, PA15, PB3> encoder;
+//typedef encoder_t<3, PB4, PB5> encoder;
 typedef st7789_t<1, PA5, PA7, PC5, PC4> display;
 
 constexpr double pi = 3.14159265358979323846;
@@ -20,7 +21,7 @@ void loop(const font_t&, color_t, color_t);
 
 int main()
 {
-    encoder::setup<pull_up>(9999);
+    encoder::setup<pull_up>(1 + (5 << 1));
     display::setup();
 
     font_t ft = fontlib::font;
@@ -44,7 +45,7 @@ void loop(const font_t& ft, color_t fg, color_t bg)
     {
         char buf[128];
 
-        sprintf(buf, "%05d", encoder::count());
+        sprintf(buf, "%05ld", encoder::count() >> 1);
         tr.set_pos(50, 100);
         tr.write(buf);
     }
