@@ -1989,12 +1989,12 @@ $EndComp
 $Comp
 L Device:Rotary_Encoder_Switch SW1
 U 1 1 5CF6E4A7
-P 6400 6300
-F 0 "SW1" H 6400 6667 50  0000 C CNN
-F 1 "Rotary_Encoder_Switch" H 6400 6576 50  0000 C CNN
-F 2 "" H 6250 6460 50  0001 C CNN
-F 3 "~" H 6400 6560 50  0001 C CNN
-	1    6400 6300
+P 6400 6200
+F 0 "SW1" H 6400 6567 50  0000 C CNN
+F 1 "Rotary_Encoder_Switch" H 6400 6476 50  0000 C CNN
+F 2 "Rotary_Encoder:RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm" H 6250 6360 50  0001 C CNN
+F 3 "~" H 6400 6460 50  0001 C CNN
+	1    6400 6200
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -2679,4 +2679,40 @@ Text GLabel 4450 5700 2    50   Input ~ 0
 PC2
 Text GLabel 4450 7450 2    50   Input ~ 0
 PC3
+$Comp
+L power:GND #PWR0101
+U 1 1 5D6134B8
+P 7000 6450
+F 0 "#PWR0101" H 7000 6200 50  0001 C CNN
+F 1 "GND" H 7005 6277 50  0000 C CNN
+F 2 "" H 7000 6450 50  0001 C CNN
+F 3 "" H 7000 6450 50  0001 C CNN
+	1    7000 6450
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0102
+U 1 1 5D613CD8
+P 5650 6450
+F 0 "#PWR0102" H 5650 6200 50  0001 C CNN
+F 1 "GND" H 5655 6277 50  0000 C CNN
+F 2 "" H 5650 6450 50  0001 C CNN
+F 3 "" H 5650 6450 50  0001 C CNN
+	1    5650 6450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5650 6450 5650 6200
+Wire Wire Line
+	5650 6200 6100 6200
+Wire Wire Line
+	6700 6300 7000 6300
+Wire Wire Line
+	7000 6300 7000 6450
+Wire Wire Line
+	6000 6100 6100 6100
+Wire Wire Line
+	6000 6300 6100 6300
+Text Notes 5950 6500 0    50   ~ 0
+CH1 -> B, CH2 -> A
 $EndSCHEMATC
