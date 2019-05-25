@@ -2672,13 +2672,13 @@ Wire Wire Line
 Connection ~ 9650 9950
 Connection ~ 9650 10450
 Text GLabel 4450 2200 2    50   Input ~ 0
-PC0
+PC4
 Text GLabel 4450 3950 2    50   Input ~ 0
-PC1
+PC5
 Text GLabel 4450 5700 2    50   Input ~ 0
-PC2
+PB0
 Text GLabel 4450 7450 2    50   Input ~ 0
-PC3
+PB1
 $Comp
 L power:GND #PWR0101
 U 1 1 5D6134B8
@@ -2715,4 +2715,20 @@ Wire Wire Line
 	6000 6300 6100 6300
 Text Notes 5950 6500 0    50   ~ 0
 CH1 -> B, CH2 -> A
+Text GLabel 7550 6650 0    50   Input ~ 0
+PB3
+Text GLabel 7550 6750 0    50   Input ~ 0
+PB5
+Wire Wire Line
+	7550 6650 8050 6650
+Wire Wire Line
+	7550 6750 7650 6750
+Text GLabel 7550 6850 0    50   Input ~ 0
+PB4
+Wire Wire Line
+	7550 6850 8050 6850
+Text GLabel 6000 6300 0    50   Input ~ 0
+PA6
+Text GLabel 6000 6100 0    50   Input ~ 0
+PA7
 $EndSCHEMATC
