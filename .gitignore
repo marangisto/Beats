@@ -29,3 +29,5 @@ _autosave-*
 .DS_Store
 *.swp
 _build
+*.log
+*.raw
