@@ -2250,4 +2250,80 @@ Text GLabel 11300 1950 0    50   Input ~ 0
 PF4
 Text GLabel 11300 1850 0    50   Input ~ 0
 PA3
+Text GLabel 7550 6850 0    50   Input ~ 0
+PB4
+Wire Wire Line
+	7550 6850 8050 6850
+Text GLabel 11400 3850 0    50   Input ~ 0
+PC13
+Text GLabel 11400 4000 0    50   Input ~ 0
+PC14
+Text GLabel 11400 4500 0    50   Input ~ 0
+PC15
+Text GLabel 11400 4650 0    50   Input ~ 0
+PC0
+Text GLabel 11400 5150 0    50   Input ~ 0
+PC1
+Text GLabel 11400 5300 0    50   Input ~ 0
+PC2
+Text GLabel 11400 5800 0    50   Input ~ 0
+PC3
+Text GLabel 11400 6600 0    50   Input ~ 0
+PA2
+Text GLabel 11400 5950 0    50   Input ~ 0
+PA0
+Text GLabel 11400 6450 0    50   Input ~ 0
+PA1
+Wire Wire Line
+	11400 3850 11650 3850
+Wire Wire Line
+	11400 4000 11650 4000
+Wire Wire Line
+	11400 4500 11650 4500
+Wire Wire Line
+	11400 4650 11650 4650
+Wire Wire Line
+	11400 5150 11650 5150
+Wire Wire Line
+	11400 5300 11650 5300
+Wire Wire Line
+	11400 5800 11650 5800
+Wire Wire Line
+	11400 5950 11650 5950
+Wire Wire Line
+	11400 6450 11650 6450
+Wire Wire Line
+	11400 6600 11650 6600
+Text GLabel 11400 8550 0    50   Input ~ 0
+PF6
+Text GLabel 11400 8400 0    50   Input ~ 0
+PF7
+Text GLabel 11400 7900 0    50   Input ~ 0
+PA12
+Text GLabel 11400 7750 0    50   Input ~ 0
+PA15
+Text GLabel 11400 7250 0    50   Input ~ 0
+PC10
+Text GLabel 11400 7100 0    50   Input ~ 0
+PC11
+Wire Wire Line
+	11400 7100 11650 7100
+Wire Wire Line
+	11400 7250 11650 7250
+Wire Wire Line
+	11400 7750 11650 7750
+Wire Wire Line
+	11400 7900 11650 7900
+Wire Wire Line
+	11400 8400 11650 8400
+Wire Wire Line
+	11400 8550 11650 8550
+Text GLabel 9150 6650 2    50   Input ~ 0
+PC12
+Text GLabel 9150 6750 2    50   Input ~ 0
+PD2
+Wire Wire Line
+	8750 6650 9150 6650
+Wire Wire Line
+	8750 6750 9150 6750
 $EndSCHEMATC
