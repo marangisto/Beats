@@ -900,12 +900,12 @@ Connection ~ 4200 2200
 $Comp
 L Connector:AudioJack2_SwitchT J2
 U 1 1 5D0F0237
-P 2200 3850
-F 0 "J2" H 2021 3783 50  0000 R CNN
-F 1 "AudioJack2_SwitchT" H 2021 3874 50  0000 R CNN
-F 2 "Local.pretty:PJ398SM" H 2200 3850 50  0001 C CNN
-F 3 "~" H 2200 3850 50  0001 C CNN
-	1    2200 3850
+P 2200 7350
+F 0 "J2" H 2021 7283 50  0000 R CNN
+F 1 "AudioJack2_SwitchT" H 2021 7374 50  0000 R CNN
+F 2 "Local.pretty:PJ398SM" H 2200 7350 50  0001 C CNN
+F 3 "~" H 2200 7350 50  0001 C CNN
+	1    2200 7350
 	1    0    0    1   
 $EndComp
 $Comp
@@ -1024,12 +1024,12 @@ Connection ~ 4200 3950
 $Comp
 L Connector:AudioJack2_SwitchT J3
 U 1 1 5D104DBA
-P 2200 5600
-F 0 "J3" H 2021 5533 50  0000 R CNN
-F 1 "AudioJack2_SwitchT" H 2021 5624 50  0000 R CNN
-F 2 "Local.pretty:PJ398SM" H 2200 5600 50  0001 C CNN
-F 3 "~" H 2200 5600 50  0001 C CNN
-	1    2200 5600
+P 2200 3850
+F 0 "J3" H 2021 3783 50  0000 R CNN
+F 1 "AudioJack2_SwitchT" H 2021 3874 50  0000 R CNN
+F 2 "Local.pretty:PJ398SM" H 2200 3850 50  0001 C CNN
+F 3 "~" H 2200 3850 50  0001 C CNN
+	1    2200 3850
 	1    0    0    1   
 $EndComp
 $Comp
@@ -1148,12 +1148,12 @@ Connection ~ 4200 5700
 $Comp
 L Connector:AudioJack2_SwitchT J4
 U 1 1 5D104E26
-P 2200 7350
-F 0 "J4" H 2021 7283 50  0000 R CNN
-F 1 "AudioJack2_SwitchT" H 2021 7374 50  0000 R CNN
-F 2 "Local.pretty:PJ398SM" H 2200 7350 50  0001 C CNN
-F 3 "~" H 2200 7350 50  0001 C CNN
-	1    2200 7350
+P 2200 5600
+F 0 "J4" H 2021 5533 50  0000 R CNN
+F 1 "AudioJack2_SwitchT" H 2021 5624 50  0000 R CNN
+F 2 "Local.pretty:PJ398SM" H 2200 5600 50  0001 C CNN
+F 3 "~" H 2200 5600 50  0001 C CNN
+	1    2200 5600
 	1    0    0    1   
 $EndComp
 $Comp
