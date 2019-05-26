@@ -1870,7 +1870,7 @@ F 3 "" H 9600 5750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9600 5750 9600 6000
+	9600 5750 9600 5850
 $Comp
 L Memory_EEPROM:AT25xxx U4
 U 1 1 5D2FD3DD
@@ -2289,18 +2289,14 @@ Wire Wire Line
 	11400 8550 11650 8550
 Text GLabel 10350 6300 2    50   Input ~ 0
 PC12
-Text GLabel 10350 6400 2    50   Input ~ 0
+Text GLabel 3600 9600 2    50   Input ~ 0
 PD2
 Wire Wire Line
 	9950 6300 10350 6300
-Wire Wire Line
-	9950 6400 10350 6400
 Text GLabel 6900 6100 2    50   Input ~ 0
 PB6
-Text GLabel 8950 8050 0    50   Input ~ 0
+Text GLabel 3600 8650 2    50   Input ~ 0
 PB7
-Wire Wire Line
-	8950 8050 9200 8050
 $Comp
 L Device:R R41
 U 1 1 5E5BA2A2
@@ -2553,4 +2549,18 @@ F 3 "" H 2450 8500 50  0001 C CNN
 	1    2450 8500
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	9950 6400 10050 6400
+Wire Wire Line
+	10050 6400 10050 5850
+Wire Wire Line
+	10050 5850 9600 5850
+Connection ~ 9600 5850
+Wire Wire Line
+	9600 5850 9600 6000
+Wire Wire Line
+	9200 8050 9100 8050
+Wire Wire Line
+	9100 8050 9100 7950
+Connection ~ 9100 7950
 $EndSCHEMATC
