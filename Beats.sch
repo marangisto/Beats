@@ -2040,13 +2040,13 @@ PB5
 Wire Wire Line
 	7550 6650 8050 6650
 Text GLabel 4450 7450 2    50   Input ~ 0
-PC3
+PB1
 Text GLabel 4450 5700 2    50   Input ~ 0
-PC2
+PB0
 Text GLabel 4450 3950 2    50   Input ~ 0
-PC1
+PC5
 Text GLabel 4450 2200 2    50   Input ~ 0
-PC0
+PC4
 $Sheet
 S 11650 3700 550  450 
 U 5DA90748
@@ -2198,8 +2198,6 @@ Wire Wire Line
 	5000 10050 5000 10550
 Wire Wire Line
 	4650 10050 5000 10050
-Text GLabel 11300 2250 0    50   Input ~ 0
-PB1
 Text GLabel 11300 2350 0    50   Input ~ 0
 PB2
 Text GLabel 11300 2450 0    50   Input ~ 0
@@ -2238,12 +2236,18 @@ Wire Wire Line
 	11050 9850 11050 10050
 Wire Wire Line
 	11050 10350 11050 10600
-Text GLabel 11300 1850 0    50   Input ~ 0
+Text GLabel 6000 6300 0    50   Input ~ 0
+PA6
+Text GLabel 6000 6100 0    50   Input ~ 0
 PA7
-Text GLabel 11300 1950 0    50   Input ~ 0
-PC4
-Text GLabel 11300 2050 0    50   Input ~ 0
-PC5
+Text GLabel 11300 2250 0    50   Input ~ 0
+PA5
 Text GLabel 11300 2150 0    50   Input ~ 0
-PB0
+PA4
+Text GLabel 11300 2050 0    50   Input ~ 0
+PF5
+Text GLabel 11300 1950 0    50   Input ~ 0
+PF4
+Text GLabel 11300 1850 0    50   Input ~ 0
+PA3
 $EndSCHEMATC
