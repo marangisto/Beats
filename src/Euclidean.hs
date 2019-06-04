@@ -1,6 +1,7 @@
 module Euclidian (main) where
 
 import Data.List (partition)
+import Control.Monad (forM_)
 
 -- | Based on http://unthingable.eat-up.org/posts/2014/Feb/23/euclidean-rhythm-generator-in-haskell/
 euclidean1 :: Int -> Int -> [Bool]
@@ -21,18 +22,15 @@ ezip (x:xs) (y:ys) = (x ++ y) : ezip xs ys
 euclidean2' :: Int -> Int -> [Int]
 euclidean2' k n
     | a == 0 = replicate k (n `div` k)
-    | otherwise =
-        let xs = euclidean2' a k 
-            f = floor $ (fromIntegral n) / (fromIntegral k)
-            c = ceiling $ (fromIntegral n) / (fromIntegral k)
-            h x = replicate (x - 1) f ++ [ c ]
-         in concatMap h xs
+    | otherwise = concatMap f $ euclidean2' a k 
     where a = n `mod` k
+          f x = replicate (x - 1) (floor n_k) ++ [ ceiling n_k ]
+              where n_k = fromIntegral n / fromIntegral k
 
 euclidean2 :: Int -> Int -> [Bool]
 euclidean2 0 n = replicate n False
 euclidean2 k n = concatMap f $ euclidean2' k n
-    where f x = replicate (x-1) False ++ [True]
+    where f x = True : replicate (x-1) False
 
 display :: [Bool] -> String
 display = map (\b -> if b then 'X' else '.')
@@ -41,15 +39,7 @@ euclidean = euclidean2
 
 main :: IO ()
 main = do
-    putStrLn $ display $ euclidean 1 2
-    putStrLn $ display $ euclidean 1 3
-    putStrLn $ display $ euclidean 4 12
-    putStrLn $ display $ euclidean 2 3
-    putStrLn $ display $ euclidean 2 5
-    putStrLn $ display $ euclidean 3 4
-    putStrLn $ display $ euclidean 3 5
-    putStrLn $ display $ euclidean 3 8
-    putStrLn $ display $ euclidean 7 12
-    putStrLn $ display $ euclidean 7 16
-    mapM_ (putStrLn . display) [ euclidean k n | n <- [1..100], k <- [0..n] ]
+    forM_ [ (1,2), (1,3), (4,12), (2,3), (2,5), (3,4), (3,5), (3,8), (7,12), (7,16) ] $ \e@(k, n) -> do
+        putStrLn $ unwords [ show e, ":", display (euclidean1 k n), "    ", display (euclidean2 k n) ]
+    mapM_ (putStrLn . display) [ euclidean2 k n | n <- [1..100], k <- [0..n] ]
 
