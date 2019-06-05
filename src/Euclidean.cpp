@@ -2,7 +2,8 @@
 #include <list>
 
 using std::list;
-using std::pair, std::make_pair;
+using std::pair;
+using std::make_pair;
 
 template<typename T>
 list<T> replicate(int n, T x)
