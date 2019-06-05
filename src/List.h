@@ -75,8 +75,15 @@ public:
 
     ~list()
     {
-        for (list_iterator<T> it = begin(); it != end(); ++it)
-            delete it.p;
+        list_node<T> *p = s->next;
+
+        while (p != s)
+        {
+            list_node<T> *q = p->next;
+            delete p;
+            p = q;
+        }
+
         delete s;
     }
 
@@ -93,7 +100,7 @@ public:
     void push_front(const T& value)
     {
         list_node<T> *node = new list_node<T>(value);
-        
+
         s->next->prev = node;
         node->next = s->next;
         s->next = node;
@@ -103,7 +110,7 @@ public:
     void push_back(const T& value)
     {
         list_node<T> *node = new list_node<T>(value);
-        
+
         s->prev->next = node;
         node->prev = s->prev;
         s->prev = node;
