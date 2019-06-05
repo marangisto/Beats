@@ -15,8 +15,8 @@ using namespace st7789;
 using namespace fontlib;
 
 typedef timer::timer_t<3> clock;
-typedef output_t<PC8> led1;
-typedef output_t<PC9> led2;
+typedef output_t<PC8> led0;
+typedef output_t<PC9> led1;
 
 typedef encoder_t<2, PA15, PB3> encoder;
 //typedef encoder_t<3, PB4, PB5> encoder;
@@ -27,10 +27,11 @@ class sequence_t
 public:
     void setup(unsigned k, unsigned n)
     {
+        m_k = k;
         m_n = n;
-        m_k = 0;
-        m_bits = 0;
         m_step = 0;
+        m_last_step = 0;
+        update();
     }
 
     void set_k(unsigned k)
@@ -64,6 +65,8 @@ public:
     }
 
     unsigned step() const { return m_step; }
+    unsigned last_step() const { return m_last_step; }
+    void set_last_step(unsigned s) { m_last_step = s; }
 
 private:
     void update()
@@ -88,15 +91,20 @@ private:
     volatile unsigned m_n;
     volatile unsigned m_step;
     volatile uint64_t m_bits;
+    unsigned m_last_step;       // only used by UI
 };
 
 static sequence_t channel0;
+static sequence_t channel1;
 
 extern "C" void ISR_TIM3(void)
 {
+    static bool tick = false;
+
     clock::clear_uif();
-    led2::toggle();
-    led1::write(led2::read() ? channel0.beat() : false);
+    tick = !tick;
+    led0::write(tick ? channel0.beat() : false);
+    led1::write(tick ? channel1.beat() : false);
 }
 
 static unsigned xm(unsigned n, unsigned i)
@@ -121,13 +129,14 @@ void loop(text_renderer_t<display>& tr);
 int main()
 {
     channel0.setup(0, 64);
+    channel1.setup(15, 64);
 
     //clock::setup(100, 65535);
     clock::setup(100, 30000);
     clock::update_interrupt_enable();
 
+    led0::setup();
     led1::setup();
-    led2::setup();
     encoder::setup<pull_up>(1 + (64 << 1));
     display::setup();
 
@@ -177,20 +186,19 @@ void loop(text_renderer_t<display>& tr)
         last_count = count;
     }
 
-    static unsigned last_step = 0;
     unsigned step = channel0.step();
 
-    if (step != last_step)
+    if (step != channel0.last_step())
     {
         unsigned n = channel0.n();
         pen_t<display> pen(color::black);
 
-        pen.move_to(xm(n, last_step), 162);
+        pen.move_to(xm(n, channel0.last_step()), 162);
         draw_pointer(pen);
         pen.set_color(color::red);
         pen.move_to(xm(n, step), 162);
         draw_pointer(pen);
-        last_step = step;
+        channel0.set_last_step(step);
     }
 }
 
