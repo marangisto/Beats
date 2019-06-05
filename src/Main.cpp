@@ -4,6 +4,7 @@
 #include <gpio.h>
 #include <st7789.h>
 #include <text.h>
+#include "Euclidean.h"
 
 using namespace stm32f0;
 using namespace timer;
@@ -24,7 +25,7 @@ int main()
     encoder::setup<pull_up>(1 + (5 << 1));
     display::setup();
 
-    font_t ft = fontlib::font;
+    font_t ft = fontlib::cmunss_24;
     const color_t fg = color::white;
     const color_t bg = color::black;
 
@@ -36,7 +37,7 @@ int main()
 
 void loop(const font_t& ft, color_t fg, color_t bg)
 {
-    text_renderer_t<display> tr(ft, fg, bg);
+    text_renderer_t<display> tr(ft, fg, bg, true);
 
     tr.set_pos(50, 50);
     tr.write("Welcome to Beats!");
@@ -48,6 +49,10 @@ void loop(const font_t& ft, color_t fg, color_t bg)
         sprintf(buf, "%05ld", encoder::count() >> 1);
         tr.set_pos(50, 100);
         tr.write(buf);
+        tr.set_pos(100, 100);
+        auto xs = expand(euclidean(7, 16));
+        for (auto x : xs)
+            tr.write(x ? 'X' : ' ');
     }
 }
 

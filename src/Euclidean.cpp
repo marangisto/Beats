@@ -1,9 +1,11 @@
+#include "Euclidean.h"
+#if defined(TEST)
 #include <stdio.h>
-#include <list>
-
-using std::list;
 using std::pair;
 using std::make_pair;
+#endif
+
+using std::list;
 
 template<typename T>
 list<T> replicate(int n, T x)
@@ -50,6 +52,8 @@ list<int> expand(const list<int>& xs)
     return concatMap(f, xs);
 }
 
+#if defined(TEST)
+
 void display(const list<int>& xs)
 {
     for (auto x : xs)
@@ -85,3 +89,4 @@ int main()
             display(expand(euclidean(k, n)));
 }
 
+#endif
