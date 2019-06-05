@@ -4,7 +4,7 @@ template<typename T>
 struct list_node
 {
     list_node(): next(this), prev(this) {}
-    list_node(const T& _value): value(_value), next(0), prev(0) {}
+    list_node(const T& _value): value(_value), next(this), prev(this) {}
 
     T           value;
     list_node   *next;
@@ -55,6 +55,22 @@ public:
         s = new list_node<T>();
         for (int i = 0; i < n; ++i)
             push_back(value);
+    }
+
+    list(const list<T>& l)
+    {
+        s = new list_node<T>();
+        for (list_iterator<T> it = l.begin(); it != l.end(); ++it)
+            push_back(*it);
+    }
+
+    list<T>& operator=(const list<T>& l)
+    {
+        this->~list();
+        s = new list_node<T>();
+        for (list_iterator<T> it = l.begin(); it != l.end(); ++it)
+            push_back(*it);
+        return *this;
     }
 
     ~list()
