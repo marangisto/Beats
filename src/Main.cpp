@@ -56,9 +56,10 @@ public:
         return b;
     }
 
-    unsigned get_n() const { return m_n; }
+    unsigned n() const { return m_n; }
 
     bool beat(unsigned i) const { return (m_bits & (1 << i)) != 0; }
+    unsigned step() const { return m_step; }
 
 private:
     void update()
@@ -81,8 +82,8 @@ private:
 
     volatile unsigned m_k;
     volatile unsigned m_n;
+    volatile unsigned m_step;
     volatile uint32_t m_bits;
-    volatile uint8_t m_step;
 };
 
 static sequence_t channel0;
@@ -92,6 +93,23 @@ extern "C" void ISR_TIM3(void)
     clock::clear_uif();
     led2::toggle();
     led1::write(led2::read() ? channel0.beat() : false);
+}
+
+static unsigned xm(unsigned n, unsigned i)
+{
+    unsigned x0 = i * 239 / n;
+    unsigned x1 = (i + 1) * 239 / n;
+
+    return (x0 + x1) >> 1;
+}
+
+static void draw_pointer(pen_t<display>& pen)
+{
+    int h = 10;
+
+    pen.rel_line_to(h >> 1, h);
+    pen.rel_line_to(-h, 0);
+    pen.rel_line_to(h >> 1, -h);
 }
 
 void loop(text_renderer_t<display>& tr);
@@ -105,7 +123,7 @@ int main()
 
     led1::setup();
     led2::setup();
-    encoder::setup<pull_up>(1 + (16 << 1));
+    encoder::setup<pull_up>(1 + (32 << 1));
     display::setup();
 
     font_t ft = fontlib::cmunss_24;
@@ -124,39 +142,50 @@ int main()
 
 void loop(text_renderer_t<display>& tr)
 {
-    static uint32_t last_count = -1;
-    uint32_t count = encoder::count() >> 1;
+    static unsigned last_count = -1;
+    unsigned count = encoder::count() >> 1;
 
     if (count != last_count)
     {
         char buf[128];
 
-        sprintf(buf, "%05ld", count);
+        sprintf(buf, "%05u", count);
         tr.set_pos(50, 100);
         tr.write(buf);
 
         channel0.set_k(count);
 
-        unsigned n = channel0.get_n();
+        unsigned n = channel0.n();
 
         pen_t<display> pen(color::yellow);
 
-        pen.move_to(0, 150);
-        pen.line_to(239, 150);
+        pen.move_to(0, 160);
+        pen.rel_line_to(239, 0);
 
         for (unsigned i = 0; i < n; ++i)
         {
-            unsigned x0 = i * 239 / n;
-            unsigned x1 = (i + 1) * 239 / n;
-            unsigned xm = (x0 + x1) >> 1;
-
             pen.set_color(channel0.beat(i) ? color::yellow : color::black);
-
-            pen.move_to(xm, 140);
-            pen.line_to(xm, 160);
+            pen.move_to(xm(n, i), 150);
+            pen.rel_line_to(0, 10);
         }
 
         last_count = count;
+    }
+
+    static unsigned last_step = 0;
+    unsigned step = channel0.step();
+
+    if (step != last_step)
+    {
+        unsigned n = channel0.n();
+        pen_t<display> pen(color::black);
+
+        pen.move_to(xm(n, last_step), 162);
+        draw_pointer(pen);
+        pen.set_color(color::red);
+        pen.move_to(xm(n, step), 162);
+        draw_pointer(pen);
+        last_step = step;
     }
 }
 
