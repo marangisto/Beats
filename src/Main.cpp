@@ -28,20 +28,20 @@ public:
     void setup(unsigned k, unsigned n)
     {
         m_n = n;
-        m_k = 1;
-        m_bits = 0xdeadbeef;
+        m_k = 0;
+        m_bits = 0;
         m_step = 0;
     }
 
     void set_k(unsigned k)
     {
-        m_k = std::min(k, 32u);
+        m_k = std::min(k, 64u);
         update();
     }
 
     void set_n(unsigned n)
     {
-        m_n = std::max<unsigned>(std::min<unsigned>(n, 32), 1);
+        m_n = std::max(std::min(n, 64u), 1u);
         if (m_step >= m_n)
             m_step = m_n - 1;
         update();
@@ -58,7 +58,11 @@ public:
 
     unsigned n() const { return m_n; }
 
-    bool beat(unsigned i) const { return (m_bits & (1 << i)) != 0; }
+    bool beat(unsigned i) const
+    {
+        return (m_bits & (static_cast<uint64_t>(1) << i)) != 0;
+    }
+
     unsigned step() const { return m_step; }
 
 private:
@@ -71,7 +75,7 @@ private:
             return;
 
         auto xs = euclidean(m_k, m_n);
-        unsigned bit = 1;
+        uint64_t bit = 1;
 
         for (auto x : xs)
         {
@@ -83,7 +87,7 @@ private:
     volatile unsigned m_k;
     volatile unsigned m_n;
     volatile unsigned m_step;
-    volatile uint32_t m_bits;
+    volatile uint64_t m_bits;
 };
 
 static sequence_t channel0;
@@ -116,14 +120,15 @@ void loop(text_renderer_t<display>& tr);
 
 int main()
 {
-    channel0.setup(0, 32);
+    channel0.setup(0, 64);
 
-    clock::setup(100, 65535);
+    //clock::setup(100, 65535);
+    clock::setup(100, 30000);
     clock::update_interrupt_enable();
 
     led1::setup();
     led2::setup();
-    encoder::setup<pull_up>(1 + (32 << 1));
+    encoder::setup<pull_up>(1 + (64 << 1));
     display::setup();
 
     font_t ft = fontlib::cmunss_24;
