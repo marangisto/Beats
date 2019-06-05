@@ -31,3 +31,4 @@ _autosave-*
 _build
 *.log
 *.raw
+a.out

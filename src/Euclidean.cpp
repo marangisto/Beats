@@ -1,11 +1,12 @@
 #include "Euclidean.h"
 #if defined(TEST)
 #include <stdio.h>
+#include <utility>
 using std::pair;
 using std::make_pair;
 #endif
 
-using std::list;
+//using std::list;
 
 template<typename T>
 list<T> replicate(int n, T x)

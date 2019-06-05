@@ -1,7 +1,9 @@
 #pragma once
 
-#include <list>
+//#include <list>
 
-std::list<int> euclidean(int k, int n);
-std::list<int> expand(const std::list<int>& xs);
+#include "List.h"
+
+list<int> euclidean(int k, int n);
+list<int> expand(const list<int>& xs);
 
