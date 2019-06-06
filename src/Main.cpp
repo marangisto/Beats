@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <timer.h>
 #include <gpio.h>
+#include <button.h>
 #include <st7789.h>
 #include <text.h>
 #include <draw.h>
@@ -14,10 +15,13 @@ using namespace gpio;
 using namespace st7789;
 using namespace fontlib;
 
+typedef timer::timer_t<6> aux;
 typedef timer::timer_t<3> clock;
+
 typedef output_t<PC8> led0;
 typedef output_t<PC9> led1;
 
+typedef button_t<PA0> encoder_btn;
 typedef encoder_t<2, PA15, PB3> encoder;
 //typedef encoder_t<3, PB4, PB5> encoder;
 typedef st7789_t<1, PA5, PA7, PC5, PC4> display;
@@ -94,8 +98,9 @@ private:
     unsigned m_last_step;       // only used by UI
 };
 
-static sequence_t channel0;
-static sequence_t channel1;
+static const uint8_t n_chan = 8;
+
+static sequence_t chan[n_chan];
 
 extern "C" void ISR_TIM3(void)
 {
@@ -103,8 +108,20 @@ extern "C" void ISR_TIM3(void)
 
     clock::clear_uif();
     tick = !tick;
-    led0::write(tick ? channel0.beat() : false);
-    led1::write(tick ? channel1.beat() : false);
+    led0::write(tick ? chan[0].beat() : false);
+    led1::write(tick ? chan[1].beat() : false);
+    led1::write(tick ? chan[2].beat() : false);
+    led1::write(tick ? chan[3].beat() : false);
+    led1::write(tick ? chan[4].beat() : false);
+    led1::write(tick ? chan[5].beat() : false);
+    led1::write(tick ? chan[6].beat() : false);
+    led1::write(tick ? chan[7].beat() : false);
+}
+
+extern "C" void ISR_TIM6_DAC(void)
+{
+    aux::clear_uif();
+    encoder_btn::update();
 }
 
 static unsigned xm(unsigned n, unsigned i)
@@ -113,6 +130,13 @@ static unsigned xm(unsigned n, unsigned i)
     unsigned x1 = (i + 1) * 239 / n;
 
     return (x0 + x1) >> 1;
+}
+
+static unsigned chan_y_pos(unsigned i)
+{
+    static const unsigned y0 = 40;
+    static const unsigned h = (display::height() - y0) / n_chan;
+    return y0 + h * i;
 }
 
 static void draw_pointer(pen_t<display>& pen)
@@ -124,31 +148,72 @@ static void draw_pointer(pen_t<display>& pen)
     pen.rel_line_to(h >> 1, -h);
 }
 
+static void plot_sequence(const sequence_t& ch, unsigned y)
+{
+    pen_t<display> pen(color::yellow);
+
+    pen.move_to(0, y);
+    pen.rel_line_to(display::width() - 1, 0);
+
+    const unsigned n = ch.n();
+
+    for (unsigned i = 0; i < n; ++i)
+    {
+        pen.set_color(ch.beat(i) ? color::yellow : color::black);
+        pen.move_to(xm(n, i), y);
+        pen.rel_line_to(0, -10);
+    }
+}
+
+static void update_cursor(sequence_t& ch, unsigned y)
+{
+    unsigned step = ch.step();
+    unsigned last_step = ch.last_step();
+
+    if (step != last_step)
+    {
+        pen_t<display> pen(color::black);
+        unsigned n = ch.n();
+
+        pen.move_to(xm(n, last_step), y);
+        draw_pointer(pen);
+        pen.set_color(color::red);
+        pen.move_to(xm(n, step), y);
+        draw_pointer(pen);
+        ch.set_last_step(step);
+    }
+}
+
 void loop(text_renderer_t<display>& tr);
 
 int main()
 {
-    channel0.setup(0, 64);
-    channel1.setup(15, 64);
-
-    //clock::setup(100, 65535);
-    clock::setup(100, 30000);
-    clock::update_interrupt_enable();
+    for (uint8_t i = 0; i < n_chan; ++i)
+        chan[i].setup(4, 4 + i);
 
     led0::setup();
     led1::setup();
-    encoder::setup<pull_up>(1 + (64 << 1));
-    display::setup();
 
-    font_t ft = fontlib::cmunss_24;
+    encoder::setup<pull_up>(1 + (64 << 1));
+    encoder_btn::setup<pull_down>();
+
+    clock::setup(100, 65535);
+    clock::update_interrupt_enable();
+    aux::setup(100, 1000);
+    aux::update_interrupt_enable();
+
     const color_t fg = color::white;
     const color_t bg = color::black;
 
+    display::setup();
     display::clear(bg);
+
+    font_t ft = fontlib::cmunss_24;
+
     text_renderer_t<display> tr(ft, fg, bg, true);
 
-    tr.set_pos(50, 50);
-    tr.write("Welcome to Beats!");
+    for (uint8_t i = 0; i < n_chan; ++i)
+        plot_sequence(chan[i], chan_y_pos(i));
 
     for (;;)
         loop(tr);
@@ -164,41 +229,17 @@ void loop(text_renderer_t<display>& tr)
         char buf[128];
 
         sprintf(buf, "%05u", count);
-        tr.set_pos(50, 100);
+        tr.set_pos(0, tr.line_spacing());
         tr.write(buf);
 
-        channel0.set_k(count);
+        chan[0].set_k(count);
 
-        unsigned n = channel0.n();
-
-        pen_t<display> pen(color::yellow);
-
-        pen.move_to(0, 160);
-        pen.rel_line_to(239, 0);
-
-        for (unsigned i = 0; i < n; ++i)
-        {
-            pen.set_color(channel0.beat(i) ? color::yellow : color::black);
-            pen.move_to(xm(n, i), 150);
-            pen.rel_line_to(0, 10);
-        }
+        plot_sequence(chan[0], chan_y_pos(0));
 
         last_count = count;
     }
 
-    unsigned step = channel0.step();
-
-    if (step != channel0.last_step())
-    {
-        unsigned n = channel0.n();
-        pen_t<display> pen(color::black);
-
-        pen.move_to(xm(n, channel0.last_step()), 162);
-        draw_pointer(pen);
-        pen.set_color(color::red);
-        pen.move_to(xm(n, step), 162);
-        draw_pointer(pen);
-        channel0.set_last_step(step);
-    }
+    for (uint8_t i = 0; i < n_chan; ++i)
+        update_cursor(chan[i], chan_y_pos(i));
 }
 
