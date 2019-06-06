@@ -1,42 +1,44 @@
 module Euclidian (main) where
 
-import Data.List (partition)
 import Control.Monad (forM_)
 
--- | Based on http://unthingable.eat-up.org/posts/2014/Feb/23/euclidean-rhythm-generator-in-haskell/
-euclidean1 :: Int -> Int -> [Bool]
-euclidean1 k n = concat $ efold [ [ i <= k ] | i <- [1..n] ]
+----
+--
+--      Euclidean Rythm algorithm returning distances between beats
+--      Based on http://www.maths.usyd.edu.au/u/joachimw/talk2.pdf
+--      Valid for n > 0, 0 < k <= n
+--
+----
 
-efold :: Eq a => [[a]] -> [[a]]
-efold xs
-    | length xs <= 3 || null a = xs
-    | otherwise = efold $ ezip a b
-    where (a, b) = partition (/= last xs) xs
-
-ezip :: [[a]] -> [[a]] -> [[a]]
-ezip x [] = x
-ezip [] x = x
-ezip (x:xs) (y:ys) = (x ++ y) : ezip xs ys
-
--- Based on http://www.maths.usyd.edu.au/u/joachimw/talk2.pdf
-euclidean2' :: Int -> Int -> [Int]
-euclidean2' k n
+euclidean :: Int -> Int -> [Int]
+euclidean k n
     | a == 0 = replicate k b
-    | otherwise = concatMap f $ euclidean2' a k 
+    | otherwise = concatMap f $ euclidean a k 
     where (b, a) = n `divMod` k
           f x = replicate (x - 1) b ++ [b + 1]
 
-euclidean2 :: Int -> Int -> [Bool]
-euclidean2 0 n = replicate n False
-euclidean2 k n = concatMap f $ euclidean2' k n
-    where f x = True : replicate (x-1) False
+----
+--
+--      Expanded Euclidean Rythm indicating beats and rests
+--      Valid for n > 0, 0 <= k <= n
+--
+----
 
-display :: [Bool] -> String
-display = map (\b -> if b then 'X' else '.')
+data Step = Beat | Rest
+
+euclidean' :: Int -> Int -> [Step]
+euclidean' 0 n = replicate n Rest
+euclidean' k n = concatMap f $ euclidean k n
+    where f x = Beat : replicate (x-1) Rest
+
+display :: [Step] -> String
+display = map f
+    where f Beat = 'X'
+          f Rest = '-'
 
 main :: IO ()
 main = do
-    mapM_ (putStrLn . display) [ euclidean2 k n | n <- [1..100], k <- [0..n] ]
+    mapM_ (putStrLn . display) [ euclidean' k n | n <- [1..100], k <- [0..n] ]
     forM_ [ (1,2), (1,3), (4,12), (2,3), (2,5), (3,4), (3,5), (3,8), (7,12), (7,16) ] $ \e@(k, n) -> do
-        putStrLn $ unwords [ show e, ":", display (euclidean1 k n), "    ", display (euclidean2 k n) ]
+        putStrLn $ unwords [ show e, ":", display $ euclidean' k n ]
 
