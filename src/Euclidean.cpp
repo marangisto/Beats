@@ -6,8 +6,6 @@ using std::pair;
 using std::make_pair;
 #endif
 
-//using std::list;
-
 template<typename T>
 list<T> replicate(int n, T x)
 {
@@ -27,15 +25,16 @@ list<T> concatMap(F f, const list<T>& xs)
 list<int> euclidean(int k, int n)
 {
     auto a = n % k;
+    auto b = n / k;
 
     if (a == 0)
-        return replicate(k, n / k);
+        return replicate(k, b);
     else
     {
-        auto f = [n, k] (auto x)
+        auto f = [k, b] (auto x)
         {
-            auto xs = replicate(x - 1, n / k); 
-            xs.push_back(n / k + 1);
+            auto xs = replicate(x - 1, b); 
+            xs.push_back(b + 1);
             return xs;
         };
         return concatMap(f, euclidean(a, k));
@@ -58,12 +57,16 @@ list<int> expand(const list<int>& xs)
 void display(const list<int>& xs)
 {
     for (auto x : xs)
-        printf("%d", x);
+        printf("%c", x ? 'X' : '-');
     printf("\n");
 }
 
 int main()
 {
+    for (int n = 1; n <= 100; ++n)
+        for (int k = 1; k <= n; ++k)
+            display(expand(euclidean(k, n)));
+
     pair<int, int> xs[] =
         { make_pair(1,2)
         , make_pair(1,3)
@@ -84,10 +87,6 @@ int main()
 
     for (auto x : xs)
         display(expand(euclidean(x.first, x.second)));
-
-    for (int n = 1; n <= 100; ++n)
-        for (int k = 1; k <= n; ++k)
-            display(expand(euclidean(k, n)));
 }
 
 #endif
