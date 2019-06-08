@@ -6,6 +6,15 @@ using namespace stm32f0;
 using namespace timer;
 using namespace gpio;
 
+typedef output_t<PA3>  out_0;   // channel 0 out
+typedef output_t<PF4>  out_1;   // channel 1 out
+typedef output_t<PF5>  out_2;   // channel 2 out
+typedef output_t<PA4>  out_3;   // channel 3 out
+typedef output_t<PA5>  out_4;   // channel 4 out
+typedef output_t<PB2>  out_5;   // channel 5 out
+typedef output_t<PB10> out_6;   // channel 6 out
+typedef output_t<PB11> out_7;   // channel 7 out
+
 typedef output_t<PC13> led_0;   // channel 0 led
 typedef output_t<PC15> led_1;   // channel 1 led
 typedef output_t<PC1>  led_2;   // channel 2 led
@@ -22,19 +31,19 @@ typedef output_t<PC6> led_10;   // user led 10
 typedef output_t<PB8> led_rd;   // rear red led
 typedef output_t<PB9> led_yw;   // rear yellow led
 
-typedef button_t<PC14> btn_0;     // user button 0
-typedef button_t<PC0>  btn_1;     // user button 1
-typedef button_t<PC2>  btn_2;     // user button 2
-typedef button_t<PA0>  btn_3;     // user button 3
-typedef button_t<PA2>  btn_4;     // user button 4
-typedef button_t<PC10> btn_5;     // user button 5
-typedef button_t<PA12> btn_6;     // user button 6
-typedef button_t<PF6>  btn_7;     // user button 7
+typedef button_t<PC14> btn_0;   // user button 0
+typedef button_t<PC0>  btn_1;   // user button 1
+typedef button_t<PC2>  btn_2;   // user button 2
+typedef button_t<PA0>  btn_3;   // user button 3
+typedef button_t<PA2>  btn_4;   // user button 4
+typedef button_t<PC10> btn_5;   // user button 5
+typedef button_t<PA12> btn_6;   // user button 6
+typedef button_t<PF6>  btn_7;   // user button 7
 
-typedef button_t<PA11> btn_8;     // user button 8
-typedef button_t<PC9>  btn_9;     // user button 9
-typedef button_t<PC7>  btn_10;    // user button 10
-typedef button_t<PB6>  btn_11;    // encoder button
+typedef button_t<PA11> btn_8;   // user button 8
+typedef button_t<PC9>  btn_9;   // user button 9
+typedef button_t<PC7>  btn_10;  // user button 10
+typedef button_t<PB6>  btn_11;  // encoder button
 
 typedef timer_t<6> aux;
 
@@ -61,6 +70,15 @@ void loop();
 
 int main()
 {
+    out_0::setup();
+    out_1::setup();
+    out_2::setup();
+    out_3::setup();
+    out_4::setup();
+    out_5::setup();
+    out_6::setup();
+    out_7::setup();
+
     led_0::setup();
     led_1::setup();
     led_2::setup();
@@ -148,6 +166,30 @@ void loop()
         led_6::toggle();
         led_7::toggle();
     }
+
+    if (led_0::read())
+        out_0::toggle();
+
+    if (led_1::read())
+        out_1::toggle();
+
+    if (led_2::read())
+        out_2::toggle();
+
+    if (led_3::read())
+        out_3::toggle();
+
+    if (led_4::read())
+        out_4::toggle();
+
+    if (led_5::read())
+        out_5::toggle();
+
+    if (led_6::read())
+        out_6::toggle();
+
+    if (led_7::read())
+        out_7::toggle();
 
     sys_tick::delay_ms(1);
 }
