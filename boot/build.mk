@@ -1,0 +1,3 @@
+BASE_DIR=../..
+LIBS=stm32f0
+MCU=STM32F051
