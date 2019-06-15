@@ -9,7 +9,7 @@
 #include "Euclidean.h"
 #include "List.h"
 
-using namespace stm32f0;
+using namespace hal;
 using namespace timer;
 using namespace gpio;
 using namespace st7789;
