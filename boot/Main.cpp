@@ -2,9 +2,9 @@
 #include <button.h>
 #include <timer.h>
 
-using namespace stm32f0;
-using namespace timer;
-using namespace gpio;
+using hal::sys_tick;
+using namespace hal::timer;
+using namespace hal::gpio;
 
 typedef output_t<PA3>  out_0;   // channel 0 out
 typedef output_t<PF4>  out_1;   // channel 1 out
