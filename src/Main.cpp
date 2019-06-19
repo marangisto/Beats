@@ -1,13 +1,11 @@
 #include <stdlib.h>
 #include <cstdio>
 #include <timer.h>
-#include <gpio.h>
-#include <button.h>
-#include <st7789.h>
 #include <text.h>
 #include <draw.h>
 #include "Euclidean.h"
 #include "List.h"
+#include "Board.h"
 
 using namespace hal;
 using namespace timer;
@@ -16,15 +14,7 @@ using namespace st7789;
 using namespace fontlib;
 
 typedef timer::timer_t<6> aux;
-typedef timer::timer_t<3> clock;
-
-typedef output_t<PC8> led0;
-typedef output_t<PC9> led1;
-
-typedef button_t<PA0> encoder_btn;
-typedef encoder_t<2, PA15, PB3> encoder;
-//typedef encoder_t<3, PB4, PB5> encoder;
-typedef st7789_t<1, PA5, PA7, PC5, PC4> display;
+typedef timer::timer_t<2> clock;
 
 class sequence_t
 {
@@ -102,7 +92,7 @@ static const uint8_t n_chan = 8;
 
 static sequence_t chan[n_chan];
 
-extern "C" void ISR_TIM3(void)
+extern "C" void ISR_TIM2(void)
 {
     static bool tick = false;
 
@@ -110,18 +100,12 @@ extern "C" void ISR_TIM3(void)
     tick = !tick;
     led0::write(tick ? chan[0].beat() : false);
     led1::write(tick ? chan[1].beat() : false);
-    led1::write(tick ? chan[2].beat() : false);
-    led1::write(tick ? chan[3].beat() : false);
-    led1::write(tick ? chan[4].beat() : false);
-    led1::write(tick ? chan[5].beat() : false);
-    led1::write(tick ? chan[6].beat() : false);
-    led1::write(tick ? chan[7].beat() : false);
-}
-
-extern "C" void ISR_TIM6_DAC(void)
-{
-    aux::clear_uif();
-    encoder_btn::update();
+    led2::write(tick ? chan[2].beat() : false);
+    led3::write(tick ? chan[3].beat() : false);
+    led4::write(tick ? chan[4].beat() : false);
+    led5::write(tick ? chan[5].beat() : false);
+    led6::write(tick ? chan[6].beat() : false);
+    led7::write(tick ? chan[7].beat() : false);
 }
 
 static unsigned xm(unsigned n, unsigned i)
@@ -189,18 +173,12 @@ void loop(text_renderer_t<display>& tr);
 int main()
 {
     for (uint8_t i = 0; i < n_chan; ++i)
-        chan[i].setup(4, 4 + i);
+        chan[i].setup(i + 1, 8);
 
-    led0::setup();
-    led1::setup();
-
-    encoder::setup<pull_up>(1 + (64 << 1));
-    encoder_btn::setup<pull_down>();
+    initialize_board();
 
     clock::setup(100, 65535);
     clock::update_interrupt_enable();
-    aux::setup(100, 1000);
-    aux::update_interrupt_enable();
 
     const color_t fg = color::white;
     const color_t bg = color::black;
