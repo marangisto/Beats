@@ -1,3 +1,3 @@
 BASE_DIR=../..
-LIBS=hal
+LIBS=hal st7789
 MCU=STM32F051

@@ -1,10 +1,13 @@
 #include <gpio.h>
 #include <button.h>
 #include <timer.h>
+#include <st7789.h>
+#include <draw.h>
 
 using hal::sys_tick;
 using namespace hal::timer;
 using namespace hal::gpio;
+using namespace st7789;
 
 typedef output_t<PA3>  out_0;   // channel 0 out
 typedef output_t<PF4>  out_1;   // channel 1 out
@@ -44,6 +47,8 @@ typedef button_t<PA11> btn_8;   // user button 8
 typedef button_t<PC9>  btn_9;   // user button 9
 typedef button_t<PC7>  btn_10;  // user button 10
 typedef button_t<PB6>  btn_11;  // encoder button
+
+typedef st7789_t<1, PB3, PB5, PB4, PC12> display;
 
 typedef timer_t<6> aux;
 
@@ -110,6 +115,12 @@ int main()
 
     aux::setup(100, 1000);
     aux::update_interrupt_enable();
+
+    //const color_t fg = color::white;
+    const color_t bg = color::red;
+
+    display::setup();
+    display::clear(bg);
 
     for (;;)
         loop();
