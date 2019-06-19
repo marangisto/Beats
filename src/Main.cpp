@@ -98,14 +98,14 @@ extern "C" void ISR_TIM2(void)
 
     clock::clear_uif();
     tick = !tick;
-    led0::write(tick ? chan[0].beat() : false);
-    led1::write(tick ? chan[1].beat() : false);
-    led2::write(tick ? chan[2].beat() : false);
-    led3::write(tick ? chan[3].beat() : false);
-    led4::write(tick ? chan[4].beat() : false);
-    led5::write(tick ? chan[5].beat() : false);
-    led6::write(tick ? chan[6].beat() : false);
-    led7::write(tick ? chan[7].beat() : false);
+    out0::write(led0::write(tick ? chan[0].beat() : false));
+    out1::write(led1::write(tick ? chan[1].beat() : false));
+    out2::write(led2::write(tick ? chan[2].beat() : false));
+    out3::write(led3::write(tick ? chan[3].beat() : false));
+    out4::write(led4::write(tick ? chan[4].beat() : false));
+    out5::write(led5::write(tick ? chan[5].beat() : false));
+    out6::write(led6::write(tick ? chan[6].beat() : false));
+    out7::write(led7::write(tick ? chan[7].beat() : false));
 }
 
 static unsigned xm(unsigned n, unsigned i)
@@ -173,7 +173,7 @@ void loop(text_renderer_t<display>& tr);
 int main()
 {
     for (uint8_t i = 0; i < n_chan; ++i)
-        chan[i].setup(i + 1, 8);
+        chan[i].setup(i + 1, 16);
 
     initialize_board();
 
