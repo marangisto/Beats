@@ -51,6 +51,7 @@ public:
         return b;
     }
 
+    unsigned k() const { return m_k; }
     unsigned n() const { return m_n; }
 
     bool beat(unsigned i) const
@@ -108,6 +109,19 @@ extern "C" void ISR_TIM2(void)
     out7::write(led7::write(tick ? chan[7].beat() : false));
 }
 
+static bool read_chan_btn(uint8_t& ch)
+{
+    if (btn0::read()) { ch = 0; return true; }
+    if (btn1::read()) { ch = 1; return true; }
+    if (btn2::read()) { ch = 2; return true; }
+    if (btn3::read()) { ch = 3; return true; }
+    if (btn4::read()) { ch = 4; return true; }
+    if (btn5::read()) { ch = 5; return true; }
+    if (btn6::read()) { ch = 6; return true; }
+    if (btn7::read()) { ch = 7; return true; }
+    return false;
+}
+
 static unsigned xm(unsigned n, unsigned i)
 {
     unsigned x0 = i * 239 / n;
@@ -147,6 +161,16 @@ static void plot_sequence(const sequence_t& ch, unsigned y)
         pen.move_to(xm(n, i), y);
         pen.rel_line_to(0, -10);
     }
+}
+
+
+static void update_status(text_renderer_t<display>& tr, uint8_t ch)
+{
+    char buf[64];
+
+    sprintf(buf, "%d: E(%d,%d)     ", ch, chan[ch].k(), chan[ch].n());
+    tr.set_pos(0, tr.line_spacing());
+    tr.write(buf);
 }
 
 static void update_cursor(sequence_t& ch, unsigned y)
@@ -199,25 +223,41 @@ int main()
 
 void loop(text_renderer_t<display>& tr)
 {
+    static bool edit_steps = false;
+    static uint32_t last_action = 0;
+
+    if (btnC::read())
+    {
+        ledC::write(edit_steps = !edit_steps);
+        last_action = sys_tick::count();
+    }
+
+    static uint8_t selected_chan = 0;
     static unsigned last_count = -1;
+
+    if (read_chan_btn(selected_chan))
+    {
+        last_count = edit_steps ? chan[selected_chan].n() : chan[selected_chan].k();
+        encoder::set_count(last_count << 1);
+        update_status(tr, selected_chan);
+        last_action = sys_tick::count();
+    }
+
     unsigned count = encoder::count() >> 1;
 
     if (count != last_count)
     {
-        char buf[128];
-
-        sprintf(buf, "%05u", count);
-        tr.set_pos(0, tr.line_spacing());
-        tr.write(buf);
-
-        chan[0].set_k(count);
-
-        plot_sequence(chan[0], chan_y_pos(0));
-
+        edit_steps ? chan[selected_chan].set_n(count) : chan[selected_chan].set_k(count);
+        plot_sequence(chan[selected_chan], chan_y_pos(selected_chan));
         last_count = count;
+        update_status(tr, selected_chan);
+        last_action = sys_tick::count();
     }
 
     for (uint8_t i = 0; i < n_chan; ++i)
         update_cursor(chan[i], chan_y_pos(i));
+
+    if (edit_steps && sys_tick::count() - last_action > 5000)
+        ledC::write(edit_steps = false);
 }
 
