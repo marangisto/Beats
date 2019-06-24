@@ -12,6 +12,8 @@ using namespace timer;
 using namespace gpio;
 using namespace st7789;
 using namespace fontlib;
+using namespace graphics;
+using namespace text;
 
 typedef timer::timer_t<6> aux;
 typedef timer::timer_t<2> clock;

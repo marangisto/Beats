@@ -5,8 +5,8 @@
 using hal::sys_tick;
 using namespace hal::timer;
 using namespace hal::gpio;
-using namespace st7789;
 using namespace fontlib;
+using namespace text;
 
 typedef hal::timer::timer_t<6> aux;
 

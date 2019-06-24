@@ -35,18 +35,18 @@ void text_box
 void run()
 {
     display::initialize(3);
-    display::clear(blue);
+    display::clear(slate_gray);
     pen_t<display> pen(white);
 
     pen.rectangle(0, 0, display::width(), display::height());
     display::render();
 
-    text_box(100,  50, 100, 25, fontlib::cmunss_20, yellow, green, "-");
-    text_box(100, 100, 100, 25, fontlib::cmunss_20, yellow, green, "Hello World!");
-    text_box(100, 150, 100, 25, fontlib::cmunss_20, yellow, green, "j-g");
-    text_box(150, 150, 100, 25, fontlib::cmunss_20, yellow, green, "H j-g");
-    text_box(100, 200, 100, 25, fontlib::cmunss_20, yellow, green, "//");
-    text_box(150, 200, 100, 25, fontlib::cmunss_20, yellow, green, "l//g");
+    text_box(100,  50, 100, 25, fontlib::cmunss_20, yellow, dark_red, "-");
+    text_box(100, 100, 100, 25, fontlib::cmunss_20, yellow, rebecca_purple, "Hello World!");
+    text_box(100, 150, 100, 25, fontlib::cmunss_20, yellow, teal, "j-g");
+    text_box(150, 150, 100, 25, fontlib::cmunss_20, yellow, olive_drab, "H j-g");
+    text_box(100, 200, 100, 25, fontlib::cmunss_20, yellow, lime_green, "//");
+    text_box(150, 200, 100, 25, fontlib::cmunss_20, yellow, orange_red, "l//g");
 
     bool quit = false;
     font_t font = fontlib::cmunrm_48;
