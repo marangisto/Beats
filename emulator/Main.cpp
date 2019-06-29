@@ -2,6 +2,8 @@
 #include <fontlib.h>
 #include <draw.h>
 #include <emulator.h>
+#include <functional>
+#include <stdlib.h>
 
 using namespace text;
 using namespace color;
@@ -11,7 +13,9 @@ using namespace fontlib;
 typedef display_t<240, 240> display;
 
 static const color_t normal_bg = web_gray;
+static const color_t normal_fg = yellow;
 static const font_t& normal_font = fontlib::cmuntt_24;
+static char tmp_buf[256];
 
 void text_box
     ( uint16_t      x
@@ -50,6 +54,66 @@ void text_box
     tr.set_pos(x + lpad, y + tpad - font.min_y);
     tr.write(s);
 }
+
+template<typename T>
+class property_t
+{
+public:
+    typedef std::function<void(T)> callback_t;
+
+    operator T() const { return m_value; }
+
+    T operator=(const T& x)
+    {   
+        m_value = x;
+        if (m_callback != 0)
+            m_callback(m_value);
+        return m_value;
+    }
+
+protected:
+    void callback(const callback_t& f) { m_callback = f; }
+
+private:
+    T          m_value;
+    callback_t m_callback;
+};
+
+template<typename T>
+class widget_t
+{
+public:
+    operator T() const { return m_value; }
+
+    T operator=(const T& x)
+    {   
+        m_value = x;
+        render();
+        return m_value;
+    }
+
+    typedef std::function<const char*(T)> show_t;
+
+    void setup(uint16_t x, uint16_t y, uint16_t w, uint16_t h, show_t s)
+    {
+        m_x = x;
+        m_y = y;
+        m_w = w;
+        m_h = h;
+        m_show = s;
+    }
+
+    void render() const
+    {
+        if (m_show)
+            text_box(m_x, m_y, m_w, m_h, normal_font, normal_fg, normal_bg, m_show(m_value));
+    }
+
+private:
+    T           m_value;
+    uint16_t    m_x, m_y, m_w, m_h;
+    show_t      m_show;
+};
 
 struct top_bar
 {
@@ -112,8 +176,6 @@ struct channel_graph
 
     static void render(uint64_t s)
     {
-        //pen_t<display>(orange_red).fill_rectangle(x, y, w_, h);
-
         for (uint8_t i = 0; i < 64; ++i)
             render_step(3, i, s & (1ul << i));
     }
@@ -123,6 +185,10 @@ void run()
 {
     display::initialize("Beats 1.0", 1);
     display::clear(black);
+
+    widget_t<int> bpm;
+    
+    bpm.setup(100, 100, 30, 30, [](int x) { sprintf(tmp_buf, "%d", x); return tmp_buf; });
 
     top_bar::render();
     bot_bar::render();
@@ -161,6 +227,7 @@ void run()
                 break;
             default:
                 text_box(160, 50, 50, 40, font, dim_gray, wheat, c);
+                bpm = bpm + 1;
                 display::render();
             }
     }
