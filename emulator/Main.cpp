@@ -1,6 +1,4 @@
-#include <text.h>
-#include <fontlib.h>
-#include <draw.h>
+#include <widget.h>
 #include <emulator.h>
 #include <functional>
 #include <stdlib.h>
@@ -17,121 +15,47 @@ static const color_t normal_fg = yellow;
 static const font_t& normal_font = fontlib::cmuntt_24;
 static char tmp_buf[256];
 
-void text_box
-    ( uint16_t      x
-    , uint16_t      y
-    , uint16_t      w
-    , uint16_t      h
-    , const font_t& font
-    , color_t       fg
-    , color_t       bg
-    , const char    *s
-    )
-{
-    text_renderer_t<display> tr(font, fg, bg, true);
-    pen_t<display> pen(bg);
-    uint16_t tw, th;
- 
-    tr.bounding_box(s, tw, th);
-
-    uint16_t rpad = tw < w ? (w - tw) >> 1 : 0;
-    uint16_t lpad = tw < w ? w - tw - rpad : 0;
-
-    if (lpad)
-        pen.fill_rectangle(x, y, lpad, h);
-    if (rpad)
-        pen.fill_rectangle(x + lpad + tw, y, rpad, h);
-
-    uint16_t bpad = th < h ? (h - th) >> 1 : 0;
-    uint16_t tpad = th < h ? h - th - bpad : 0;
-
-    if (tpad)
-        pen.fill_rectangle(x + lpad, y, tw, tpad);
-    if (bpad)
-        pen.fill_rectangle(x + lpad, y + th + tpad, tw, bpad);
-
-    pen_t<display>(black).rectangle(x, y, w, h);
-    tr.set_pos(x + lpad, y + tpad - font.min_y);
-    tr.write(s);
-}
-
-template<typename T>
-class property_t
-{
-public:
-    typedef std::function<void(T)> callback_t;
-
-    operator T() const { return m_value; }
-
-    T operator=(const T& x)
-    {   
-        m_value = x;
-        if (m_callback != 0)
-            m_callback(m_value);
-        return m_value;
-    }
-
-protected:
-    void callback(const callback_t& f) { m_callback = f; }
-
-private:
-    T          m_value;
-    callback_t m_callback;
-};
-
-template<typename T>
-class widget_t
-{
-public:
-    operator T() const { return m_value; }
-
-    T operator=(const T& x)
-    {   
-        m_value = x;
-        render();
-        return m_value;
-    }
-
-    typedef std::function<const char*(T)> show_t;
-
-    void setup(uint16_t x, uint16_t y, uint16_t w, uint16_t h, show_t s)
-    {
-        m_x = x;
-        m_y = y;
-        m_w = w;
-        m_h = h;
-        m_show = s;
-    }
-
-    void render() const
-    {
-        if (m_show)
-            text_box(m_x, m_y, m_w, m_h, normal_font, normal_fg, normal_bg, m_show(m_value));
-    }
-
-private:
-    T           m_value;
-    uint16_t    m_x, m_y, m_w, m_h;
-    show_t      m_show;
-};
+struct unit_t {};
 
 struct top_bar
 {
+    widget_t<display, int> bpm;
+    widget_t<display, uint8_t> beats;
+    widget_t<display, uint8_t> steps;
+
+    top_bar()
+        : bpm(normal_font, normal_fg, normal_bg, 0, 0, lw, h, [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }, true)
+        , beats(normal_font, normal_fg, normal_bg, lw, 0, mw, h, [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }, true)
+        , steps(normal_font, normal_fg, normal_bg, lw + mw, 0, rw, h, [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }, true)
+        {}
+
     static const uint16_t lw = display::width() / 3;
-    static const uint16_t rw = display::width() - lw;
+    static const uint16_t rw = lw;
+    static const uint16_t mw = display::width() - lw - rw;
     static const uint16_t h = 30;
 
     static constexpr uint16_t height() { return h; }
 
-    static void render()
+    void render()
     {
-        text_box(0,  0, lw, h, normal_font, yellow, normal_bg, "140.0");
-        text_box(lw, 0, rw, h, normal_font, yellow, normal_bg, "1: (5, 14)");
+        bpm.render();
+        beats.render();
+        steps.render();
     }
 };
 
 struct bot_bar
 {
+    widget_t<display, unit_t> b0;
+    widget_t<display, unit_t> b1;
+    widget_t<display, unit_t> b2;
+
+    bot_bar()
+        : b0(normal_font, normal_fg, normal_bg, 0, y, lw, h, [](auto _) { return "Run"; }, true)
+        , b1(normal_font, normal_fg, normal_bg, lw, y, mw, h, [](auto _) { return "Func"; }, true)
+        , b2(normal_font, normal_fg, normal_bg, lw + mw, y, rw, h, [](auto _) { return "Steps"; }, true)
+        {}
+
     static const uint16_t lw = display::width() / 3;
     static const uint16_t rw = lw;
     static const uint16_t mw = display::width() - lw - rw;
@@ -140,11 +64,11 @@ struct bot_bar
 
     static constexpr uint16_t height() { return h; }
 
-    static void render()
+    void render()
     {
-        text_box(0,  y, lw, h, normal_font, yellow, normal_bg, "Run");
-        text_box(lw, y, mw, h, normal_font, yellow, normal_bg, "Func");
-        text_box(lw + mw, y, rw, h, normal_font, yellow, normal_bg, "Steps");
+        b0.render();
+        b1.render();
+        b2.render();
     }
 };
 
@@ -186,12 +110,11 @@ void run()
     display::initialize("Beats 1.0", 1);
     display::clear(black);
 
-    widget_t<int> bpm;
-    
-    bpm.setup(100, 100, 30, 30, [](int x) { sprintf(tmp_buf, "%d", x); return tmp_buf; });
+    top_bar tb;
+    bot_bar bb;
 
-    top_bar::render();
-    bot_bar::render();
+    tb.bpm = 140;
+
     channel_graph<0>::render(0x1111ul);
     channel_graph<1>::render(0);
     channel_graph<2>::render(0);
@@ -213,23 +136,32 @@ void run()
 
     while (!quit)
     {
-        char c[2] = { 0, 0 };
+        int x;
 
-        if (keyboard_poll(c[0]))
-            switch (c[0])
+        switch (poll_event(x))
+        {
+        case ev_quit:
+            quit = true;
+            break;
+        case ev_key:
             {
-            case 0:
-                quit = true;
-                break;
-            case '\r':
-                r += font.line_spacing();
-                tr.set_pos(0, r);
-                break;
-            default:
-                text_box(160, 50, 50, 40, font, dim_gray, wheat, c);
-                bpm = bpm + 1;
+/*
+                char c[2] = { static_cast<char>(x), 0 };
+                txbox = c;
                 display::render();
+                */
+                break;
             }
+        case ev_wheel:
+            tb.bpm = tb.bpm + x;
+            display::render();
+            break;
+        case ev_btn:
+            tb.beats = tb.beats + 1;
+            display::render();
+            break;
+        default: ;
+        }
     }
 
     display::shutdown();
