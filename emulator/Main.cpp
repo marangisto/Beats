@@ -19,14 +19,29 @@ struct unit_t {};
 
 struct top_bar
 {
-    widget_t<display, int> bpm;
+    widget_t<display, float> bpm;
     widget_t<display, uint8_t> beats;
     widget_t<display, uint8_t> steps;
 
     top_bar()
-        : bpm(normal_font, normal_fg, normal_bg, 0, 0, lw, h, [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }, true)
-        , beats(normal_font, normal_fg, normal_bg, lw, 0, mw, h, [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }, true)
-        , steps(normal_font, normal_fg, normal_bg, lw + mw, 0, rw, h, [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }, true)
+        : bpm
+            ( normal_font, normal_fg, normal_bg, 0, 0, lw, h
+            , [](auto x) { sprintf(tmp_buf, "%.1f", x); return tmp_buf; }
+            , [](auto& x, int i) { x += i; }
+            , true
+            )
+        , beats
+            ( normal_font, normal_fg, normal_bg, lw, 0, mw, h
+            , [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }
+            , [](auto& x, int i) { x += i; }
+            , true
+            )
+        , steps
+            ( normal_font, normal_fg, normal_bg, lw + mw, 0, rw, h
+            , [](auto x) { sprintf(tmp_buf, "%d", x); return tmp_buf; }
+            , [](auto& x, int i) { x += i; }
+            , true
+            )
         {}
 
     static const uint16_t lw = display::width() / 3;
@@ -51,9 +66,9 @@ struct bot_bar
     widget_t<display, unit_t> b2;
 
     bot_bar()
-        : b0(normal_font, normal_fg, normal_bg, 0, y, lw, h, [](auto _) { return "Run"; }, true)
-        , b1(normal_font, normal_fg, normal_bg, lw, y, mw, h, [](auto _) { return "Func"; }, true)
-        , b2(normal_font, normal_fg, normal_bg, lw + mw, y, rw, h, [](auto _) { return "Steps"; }, true)
+        : b0(normal_font, normal_fg, normal_bg, 0, y, lw, h, [](auto _) { return "Run"; }, 0, true)
+        , b1(normal_font, normal_fg, normal_bg, lw, y, mw, h, [](auto _) { return "Func"; }, 0, true)
+        , b2(normal_font, normal_fg, normal_bg, lw + mw, y, rw, h, [](auto _) { return "Steps"; }, 0, true)
         {}
 
     static const uint16_t lw = display::width() / 3;
@@ -105,6 +120,63 @@ struct channel_graph
     }
 };
 
+enum ui_event_t
+    { ui_no_event
+    , ui_enc_up
+    , ui_enc_dn
+    , ui_enc_btn
+    , ui_btn_0
+    , ui_btn_1
+    , ui_btn_2
+    , ui_btn_3
+    , ui_btn_4
+    , ui_btn_5
+    , ui_btn_6
+    , ui_btn_7
+    , ui_btn_a
+    , ui_btn_b
+    , ui_btn_c
+    };
+
+static ui_event_t ui_event()
+{
+    int x;
+
+    switch (poll_event(x))
+    {
+    case ev_quit:
+        exit(0);
+        break;
+    case ev_key:
+        printf("btn %d\n", x);
+        switch (x)
+        {
+            case '0' : return ui_btn_0;
+            case '1' : return ui_btn_1;
+            case '2' : return ui_btn_2;
+            case '3' : return ui_btn_3;
+            case '4' : return ui_btn_4;
+            case '5' : return ui_btn_5;
+            case '6' : return ui_btn_6;
+            case '7' : return ui_btn_7;
+            case 'a' : return ui_btn_a;
+            case 'b' : return ui_btn_b;
+            case 'c' : return ui_btn_c;
+            default: ;
+        }
+        break;
+    case ev_wheel:
+        printf("wheel = %d\n", x);
+        return x > 0 ? ui_enc_up : ui_enc_dn;
+        break;
+    case ev_btn:
+        printf("encoder button!\n");
+        return ui_enc_btn;
+        break;
+    default: ;
+    }
+}
+
 void run()
 {
     display::initialize("Beats 1.0", 1);
@@ -112,6 +184,9 @@ void run()
 
     top_bar tb;
     bot_bar bb;
+
+    iwidget *ws[] = { &tb.bpm, &tb.beats, &tb.steps };
+    uint8_t nws = sizeof(ws) / sizeof(*ws);
 
     tb.bpm = 140;
 
@@ -126,42 +201,41 @@ void run()
 
     display::render();
 
-    bool quit = false;
-    const font_t& font = normal_font;
-    text_renderer_t<display> tr(font, white, red, true);
+    bool edit = false;
+    uint8_t focus = 0;
 
-    uint16_t r = font.start_row();
-
-    tr.set_pos(0, r);
-
-    while (!quit)
+    for (;;)
     {
-        int x;
+        ui_event_t ev = ui_event();
 
-        switch (poll_event(x))
+        switch (ev)
         {
-        case ev_quit:
-            quit = true;
-            break;
-        case ev_key:
+        case ui_enc_btn:
+             edit = !edit;
+             if (edit)
+                ws[focus]->fgbg(normal_fg, red);
+             else
+                ws[focus]->fgbg(normal_fg, lime_green);
+             break;
+        case ui_enc_up: ;
+        case ui_enc_dn:
+            if (edit)
+                ws[focus]->edit(ev == ui_enc_up ? 1 : -1);
+            else
             {
-/*
-                char c[2] = { static_cast<char>(x), 0 };
-                txbox = c;
-                display::render();
-                */
-                break;
+                ws[focus]->fgbg(normal_fg, normal_bg);
+                if (ev == ui_enc_up)
+                    focus = focus + 1 < nws ? focus + 1 : 0;
+                else
+                    focus = focus > 0 ? focus - 1 : (nws - 1);
+                ws[focus]->fgbg(normal_fg, lime_green);
             }
-        case ev_wheel:
-            tb.bpm = tb.bpm + x;
-            display::render();
             break;
-        case ev_btn:
-            tb.beats = tb.beats + 1;
-            display::render();
-            break;
-        default: ;
+        default:
+            continue;
         }
+
+        display::render();
     }
 
     display::shutdown();
