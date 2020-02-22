@@ -11,6 +11,30 @@ namespace board
 {
 using namespace hal::gpio;
 
+template<gpio_pin_t PIN>
+struct led_t: output_t<PIN>
+{
+    static void set_ms(uint16_t n)
+    {
+        output_t<PIN>::set();
+        m_count = n;
+    }
+
+    static void update()
+    {
+        if (m_count > 0)
+        {
+            if (--m_count == 0)
+                output_t<PIN>::clear();
+        }
+    }
+
+    static uint16_t m_count;
+};
+
+template<gpio_pin_t PIN>
+uint16_t led_t<PIN>::m_count = 0;
+
 typedef hal::timer::timer_t<6> aux;
 
 typedef output_t<PA3>  out0;    // channel 0 out
@@ -22,21 +46,21 @@ typedef output_t<PB2>  out5;    // channel 5 out
 typedef output_t<PB10> out6;    // channel 6 out
 typedef output_t<PB11> out7;    // channel 7 out
 
-typedef output_t<PC13> led0;    // channel 0 led
-typedef output_t<PC15> led1;    // channel 1 led
-typedef output_t<PC1>  led2;    // channel 2 led
-typedef output_t<PC3>  led3;    // channel 3 led
-typedef output_t<PA1>  led4;    // channel 4 led
-typedef output_t<PC11> led5;    // channel 5 led
-typedef output_t<PA15> led6;    // channel 6 led
-typedef output_t<PF7>  led7;    // channel 7 led
+typedef led_t<PC13> led0;       // channel 0 led
+typedef led_t<PC15> led1;       // channel 1 led
+typedef led_t<PC1>  led2;       // channel 2 led
+typedef led_t<PC3>  led3;       // channel 3 led
+typedef led_t<PA1>  led4;       // channel 4 led
+typedef led_t<PC11> led5;       // channel 5 led
+typedef led_t<PA15> led6;       // channel 6 led
+typedef led_t<PF7>  led7;       // channel 7 led
 
-typedef output_t<PA8> ledA;     // user led 8 
-typedef output_t<PC8> ledB;     // user led 9 
-typedef output_t<PC6> ledC;     // user led 10 
+typedef led_t<PA8> ledA;        // user led 8
+typedef led_t<PC8> ledB;        // user led 9
+typedef led_t<PC6> ledC;        // user led 10
 
-typedef output_t<PB8> ledX;     // rear red led
-typedef output_t<PB9> ledY;     // rear yellow led
+typedef led_t<PB8> ledX;        // rear red led
+typedef led_t<PB9> ledY;        // rear yellow led
 
 typedef button_t<PC14> btn0;    // user button 0
 typedef button_t<PC0>  btn1;    // user button 1
@@ -125,7 +149,7 @@ static void update()
     if (BTN::read())
     {
         MQ::put(message_t().emplace<button_press>(NO));
-        board::ledX::toggle();
+        board::ledX::set_ms(100);
     }
 }
 
@@ -157,8 +181,23 @@ template<> void handler<interrupt::TIM6_DAC>()
     {
         mq::put(message_t().emplace<encoder_delta>(enc_last_count - c));
         enc_last_count = c;
-        ledY::toggle();
+        ledY::set_ms(25);
     }
+
+    led0::update();
+    led1::update();
+    led2::update();
+    led3::update();
+    led4::update();
+    led5::update();
+    led6::update();
+    led7::update();
+    ledA::update();
+    ledB::update();
+    ledC::update();
+    ledX::update();
+    ledY::update();
+
     out0::clear();
 }
 

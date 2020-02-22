@@ -5,12 +5,12 @@ using hal::sys_tick;
 
 void clock_trigger()
 {
-    board::led6::toggle();
+    board::ledA::set_ms(25);
 }
 
 void reset_trigger()
 {
-    board::led7::toggle();
+    board::ledB::set_ms(100);
 }
 
 int main()
@@ -27,8 +27,8 @@ int main()
 
     for (;;)
     {
-        board::led0::toggle();
-        sys_tick::delay_ms(250);
+        board::led0::set_ms(25);
+        sys_tick::delay_ms(500);
     }
 }
 
