@@ -52,6 +52,9 @@ typedef button_t<PC9>  btnB;    // user button 9
 typedef button_t<PC7>  btnC;    // user button 10
 typedef button_t<PB6>  btnE;    // encoder button
 
+typedef input_t<PB7> clk;       // clock input
+typedef input_t<PD2> rst;       // reset input
+
 typedef hal::timer::encoder_t<3, PA6, PA7> enc;
 typedef st7789::st7789_t<1, PB3, PB5, PB4, PC12> tft;
 typedef fifo_t<message_t, 0, 8> mq;
@@ -96,6 +99,13 @@ void setup()
     btnC::setup<pull_up>();
     btnE::setup<pull_up>();
 
+    clk::setup();
+    rst::setup();
+
+    clk::enable_interrupt<falling_edge>();
+    rst::enable_interrupt<falling_edge>();
+    hal::nvic<interrupt::EXTI4_15>::enable();
+
     enc::setup<pull_up>(1 + (64 << 1));
 
     aux::setup(100, 1000);
@@ -123,6 +133,7 @@ template<> void handler<interrupt::TIM6_DAC>()
 {
     using namespace board;
 
+    out0::set();
     aux::clear_uif();
 
     update<btn0, mq, 0>();
@@ -148,5 +159,25 @@ template<> void handler<interrupt::TIM6_DAC>()
         enc_last_count = c;
         ledY::toggle();
     }
+    out0::clear();
+}
+
+template<> void handler<interrupt::EXTI4_15>()
+{
+    using namespace board;
+    extern void clock_trigger();
+    extern void reset_trigger();
+
+    bool ci = clk::interrupt_pending();
+    bool ri = rst::interrupt_pending();
+
+    if (ci)
+        clock_trigger();
+    if (ri)
+        reset_trigger();
+    if (ci)
+        clk::clear_interrupt();
+    if (ri)
+        rst::clear_interrupt();
 }
 
