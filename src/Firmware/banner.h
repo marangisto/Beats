@@ -2,6 +2,9 @@
 
 #include <widget.h>
 
+#define xstr(s) str(s)
+#define str(s) #s
+
 namespace banner
 {
 
@@ -12,7 +15,7 @@ struct banner_t
     {
         const fontlib::font_t& font = fontlib::cmunvt_28;
 
-        m_label.setup(font, color::black, color::yellow, "Beats");
+        m_label.setup(font, color::black, color::yellow, "Beats " xstr(VERSION));
         m_frame.setup(&m_label, color::blue);
     }
 
