@@ -108,7 +108,7 @@ void setup()
 
     enc::setup<pull_up>(1 + (64 << 1));
 
-    aux::setup(100, 1000);
+    aux::setup(48-1, 1000-1); // 1kHz
     aux::update_interrupt_enable();
     hal::nvic<interrupt::TIM6_DAC>::enable();
 
