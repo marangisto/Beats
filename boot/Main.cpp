@@ -11,6 +11,7 @@ using namespace hal::timer;
 using namespace hal::gpio;
 using namespace st7789;
 using namespace fontlib;
+using namespace text;
 
 typedef output_t<PA3>  out_0;   // channel 0 out
 typedef output_t<PF4>  out_1;   // channel 1 out
