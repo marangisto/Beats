@@ -1,5 +1,6 @@
 #include "board.h"
 #include "banner.h"
+#include "clock.h"
 
 using hal::sys_tick;
 
@@ -16,14 +17,15 @@ void reset_trigger()
 int main()
 {
     static banner::banner_t<board::tft> banner;
+    static clock::gui_t<board::tft> clock;
 
     board::setup();
     banner.setup();
     banner.render();
-
-    board::clk::enable_interrupt<hal::gpio::falling_edge>();
-    board::rst::enable_interrupt<hal::gpio::falling_edge>();
-    hal::nvic<interrupt::EXTI4_15>::enable();
+    sys_tick::delay_ms(1000);
+    board::tft::clear(screen_bg);
+    clock.setup();
+    clock.render();
 
     for (;;)
     {

@@ -165,7 +165,6 @@ void setup()
     adc::start_conversion();
 
     tft::setup<hal::spi::fpclk_2>();
-    tft::clear(color::slate_gray);
 }
 
 } // namespace board
