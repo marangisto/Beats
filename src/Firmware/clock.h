@@ -9,9 +9,10 @@ namespace clock
 
 typedef hal::timer::timer_t<2> tim;
 
-static const uint16_t clock_multiplier = 32;
+static const uint16_t clock_multiplier = 32;                // must be power of 2!
+static const uint32_t clock_mask = clock_multiplier - 1;
 
-uint32_t bpm_arr(float bpm)
+static uint32_t bpm_arr(float bpm)
 {
     float f1 = hal::sys_clock::freq() >> 1;
     float f2 = clock_multiplier * bpm / 60.0;
@@ -19,18 +20,20 @@ uint32_t bpm_arr(float bpm)
     return static_cast<uint32_t>(f1 / f2) - 1;
 }
 
-enum runstate_t { stopped, running };
+enum run_state_t { stopped, running };
+enum clock_source_t { internal, external };
 
-static volatile runstate_t runstate = stopped;
+static volatile run_state_t run_state = stopped;
+static volatile clock_source_t clock_source = internal;
 
-static void master_tick(int16_t i)
+static void master_tick(uint32_t i)
 {
     board::out1::set();
     hal::sys_tick::delay_us(25);
     board::out1::clear();
 
     if (!i)
-        board::ledA::set_ms(runstate == running ? 50 : 3);
+        board::ledA::set_ms(run_state == running ? 50 : 3);
 }
 
 struct show_bpm
@@ -84,7 +87,7 @@ struct gui_t
             switch (std::get<button_press>(m))
             {
             case 10:    // btn A
-                runstate = runstate == stopped ? running : stopped;
+                run_state = run_state == stopped ? running : stopped;
                 break;
             default: ;  // unhandler button
             }
@@ -106,20 +109,36 @@ struct gui_t
 
 } // namespace clock
 
+static volatile uint32_t int_clock_count = 0;
+static volatile uint32_t ext_clock_count = 0;
+
 template<> void handler<interrupt::TIM2>()
 {
-    static const int16_t n = clock::clock_multiplier;
-    static int16_t i = 0;
-
     clock::tim::clear_uif();
-    clock::master_tick(i++ - (n >> 2));
-    if (i >= n)
-        i = 0;
+    if (clock::clock_source == clock::internal)
+        clock::master_tick(int_clock_count & clock::clock_mask);
+    ++int_clock_count;
+
+    static uint32_t int_last_count = 0;
+    static uint32_t ext_last_count = 0;
+
+    if (int_clock_count - int_last_count > 100)
+    {
+        if (ext_clock_count - ext_last_count == 0)  // see no external trigger
+            clock::clock_source = clock::internal;  // switch to internal clock
+        else
+            clock::clock_source = clock::external;  // switch to external clock
+
+        int_last_count = int_clock_count;
+        ext_last_count = ext_clock_count;
+    }
 }
 
 void clock_trigger()            // EXTI for external clock
 {
-    board::led0::set_ms(3);
+    if (clock::clock_source == clock::external)
+        clock::master_tick(ext_clock_count & clock::clock_mask);
+    ++ext_clock_count;
 }
 
 void reset_trigger()            // EXTI for external reset
