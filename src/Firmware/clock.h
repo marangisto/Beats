@@ -89,6 +89,12 @@ struct gui_t
             case 10:    // btn A
                 run_state = run_state == stopped ? running : stopped;
                 break;
+            case 100 + internal:
+                m_mode = "intern";
+                break;
+            case 100 + external:
+                m_mode = "extern";
+                break;
             default: ;  // unhandler button
             }
             break;
@@ -125,9 +131,15 @@ template<> void handler<interrupt::TIM2>()
     if (int_clock_count - int_last_count > 100)
     {
         if (ext_clock_count - ext_last_count == 0)  // see no external trigger
+        {
             clock::clock_source = clock::internal;  // switch to internal clock
+            board::mq::put(message_t().emplace<button_press>(100 + clock::internal));
+        }
         else
+        {
             clock::clock_source = clock::external;  // switch to external clock
+            board::mq::put(message_t().emplace<button_press>(100 + clock::external));
+        }
 
         int_last_count = int_clock_count;
         ext_last_count = ext_clock_count;
