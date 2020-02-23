@@ -19,6 +19,13 @@ static const uint8_t adc_buf_size = 4;
 static uint16_t adc_buf[adc_buf_size];
 static const uint32_t adc_sample_freq = 2000;
 
+template<uint8_t CH> inline uint16_t cvin();
+
+template<> inline uint16_t cvin<0>() { return 4095 - adc_buf[2]; }
+template<> inline uint16_t cvin<1>() { return 4095 - adc_buf[1]; }
+template<> inline uint16_t cvin<2>() { return 4095 - adc_buf[3]; }
+template<> inline uint16_t cvin<3>() { return 4095 - adc_buf[0]; }
+
 void clock_trigger() {}
 void reset_trigger() {}
 
@@ -67,10 +74,10 @@ int main()
         static int8_t i = 0;
 
         box0 = i++;
-        box1 = adc_buf[2];
-        box2 = adc_buf[1];
-        box3 = adc_buf[3];
-        box4 = adc_buf[0];
+        box1 = cvin<0>();
+        box2 = cvin<1>();
+        box3 = cvin<2>();
+        box4 = cvin<3>();
         sys_tick::delay_ms(10);
     }
 }
