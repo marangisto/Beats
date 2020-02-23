@@ -246,6 +246,7 @@ template<> void handler<interrupt::EXTI4_15>()
     bool ci = clk::interrupt_pending();
     bool ri = rst::interrupt_pending();
 
+    board::led7::set_ms(25);
     if (ci)
         clock_trigger();
     if (ri)

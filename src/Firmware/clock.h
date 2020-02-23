@@ -11,7 +11,7 @@ typedef hal::timer::timer_t<2> tim;
 
 static const uint16_t clock_multiplier = 32;
 
-static uint32_t bpm_arr(float bpm)
+uint32_t bpm_arr(float bpm)
 {
     float f1 = hal::sys_clock::freq() >> 1;
     float f2 = clock_multiplier * bpm / 60.0;
@@ -115,5 +115,15 @@ template<> void handler<interrupt::TIM2>()
     clock::master_tick(i++ - (n >> 2));
     if (i >= n)
         i = 0;
+}
+
+void clock_trigger()            // EXTI for external clock
+{
+    board::led0::set_ms(3);
+}
+
+void reset_trigger()            // EXTI for external reset
+{
+    board::ledC::set_ms(100);
 }
 
