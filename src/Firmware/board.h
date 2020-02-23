@@ -3,6 +3,8 @@
 #include <gpio.h>
 #include <button.h>
 #include <timer.h>
+#include <adc.h>
+#include <dma.h>
 #include <st7789.h>
 #include <fifo.h>
 #include <message.h>
@@ -83,6 +85,22 @@ typedef hal::timer::encoder_t<3, PA6, PA7> enc;
 typedef st7789::st7789_t<1, PB3, PB5, PB4, PC12> tft;
 typedef fifo_t<message_t, 0, 8> mq;
 
+typedef hal::adc::adc_t<1> adc;
+typedef hal::dma::dma_t<1> adc_dma;
+typedef hal::timer::timer_t<15> adc_tim;
+
+static const uint8_t adc_dma_ch = 1;
+static const uint8_t adc_buf_size = 4;
+static uint16_t adc_buf[adc_buf_size];
+static const uint32_t adc_sample_freq = 2000;
+
+template<uint8_t CH> inline uint16_t cvin();
+
+template<> inline uint16_t cvin<0>() { return 4095 - adc_buf[2]; }
+template<> inline uint16_t cvin<1>() { return 4095 - adc_buf[1]; }
+template<> inline uint16_t cvin<2>() { return 4095 - adc_buf[3]; }
+template<> inline uint16_t cvin<3>() { return 4095 - adc_buf[0]; }
+
 void setup()
 {
     out0::setup();
@@ -135,6 +153,16 @@ void setup()
     aux::setup(48-1, 1000-1); // 1kHz
     aux::update_interrupt_enable();
     hal::nvic<interrupt::TIM6_DAC>::enable();
+
+    adc_tim::setup(1, (hal::sys_clock::freq() >> 1) / adc_sample_freq - 1);
+    adc_tim::master_mode<adc_tim::mm_update>();
+    adc_dma::setup();
+    adc::setup();
+    adc::sequence<8, 9, 14, 15>(); // PB0, PB1, PC4, PC5
+    adc::dma<adc_dma, adc_dma_ch>(adc_buf, adc_buf_size);
+    adc::trigger<0x4>(); // FIXME: use symbol for TIM15_TRIGO
+    adc::enable();
+    adc::start_conversion();
 
     tft::setup<hal::spi::fpclk_2>();
     tft::clear(color::slate_gray);
