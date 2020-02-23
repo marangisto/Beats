@@ -9,7 +9,7 @@ namespace clock
 
 typedef hal::timer::timer_t<2> tim;
 
-static const uint8_t clock_multiplier = 32;
+static const uint16_t clock_multiplier = 32;
 
 static uint32_t bpm_arr(float bpm)
 {
@@ -17,6 +17,20 @@ static uint32_t bpm_arr(float bpm)
     float f2 = clock_multiplier * bpm / 60.0;
 
     return static_cast<uint32_t>(f1 / f2) - 1;
+}
+
+enum runstate_t { stopped, running };
+
+static volatile runstate_t runstate = stopped;
+
+static void master_tick(int16_t i)
+{
+    board::out1::set();
+    hal::sys_tick::delay_us(25);
+    board::out1::clear();
+
+    if (!i)
+        board::ledA::set_ms(runstate == running ? 50 : 3);
 }
 
 struct show_bpm
@@ -40,13 +54,13 @@ struct gui_t
     void setup()
     {
         m_bpm.setup(font(), text_fg, text_bg, 120.0, &m_quiet);
-        m_arr.setup(font(), text_fg, text_bg, 0, &m_quiet);
+        m_mode.setup(font(), text_fg, text_bg, "intern", &m_quiet);
         m_row.setup();
         m_row.append(&m_bpm);
-        m_row.append(&m_arr);
+        m_row.append(&m_mode);
         m_panel.setup(&m_row, frame_fg);
-        m_panel.constrain(10, board::tft::width() - 100, 10, board::tft::height());
-        m_panel.layout(50, 60);
+        m_panel.constrain(10, board::tft::width(), 10, board::tft::height());
+        m_panel.layout(0, 0);
         m_panel.render();
         m_quiet = false;
 
@@ -66,19 +80,26 @@ struct gui_t
     {
         switch (m.index())
         {
+        case button_press:
+            switch (std::get<button_press>(m))
+            {
+            case 10:    // btn A
+                runstate = runstate == stopped ? running : stopped;
+                break;
+            default: ;  // unhandler button
+            }
+            break;
         case encoder_delta:
             m_bpm.edit(std::get<encoder_delta>(m));
-            m_arr = bpm_arr(m_bpm);
-            tim::set_auto_reload_value(m_arr);
+            tim::set_auto_reload_value(bpm_arr(m_bpm));
             break;
         default: ;      // unhandled message
         }
     }
 
     valuebox_t<DISPLAY, show_bpm, edit_bpm>     m_bpm;
-    valuebox_t<DISPLAY, show_int>               m_arr;
-    //horizontal_t<DISPLAY>                       m_row;
-    vertical_t<DISPLAY>                       m_row;
+    valuebox_t<DISPLAY, show_str>               m_mode;
+    horizontal_t<DISPLAY>                       m_row;
     border_t<DISPLAY>                           m_panel;
     bool                                        m_quiet;
 };
@@ -87,9 +108,12 @@ struct gui_t
 
 template<> void handler<interrupt::TIM2>()
 {
-    using namespace board;
+    static const int16_t n = clock::clock_multiplier;
+    static int16_t i = 0;
 
-    board::out1::toggle();
     clock::tim::clear_uif();
+    clock::master_tick(i++ - (n >> 2));
+    if (i >= n)
+        i = 0;
 }
 

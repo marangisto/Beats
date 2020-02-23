@@ -7,13 +7,12 @@ using hal::sys_tick;
 
 void clock_trigger()
 {
-    board::ledA::set_ms(25);
-    board::led0::set_ms(1);
+    board::led0::set_ms(3);
 }
 
 void reset_trigger()
 {
-    board::ledB::set_ms(100);
+    board::ledC::set_ms(100);
 }
 
 int main()
