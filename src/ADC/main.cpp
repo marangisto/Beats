@@ -3,8 +3,8 @@
 
 using hal::sys_tick;
 
-void clock_trigger() {}
-void reset_trigger() {}
+void clock_trigger() { board::led5::toggle(); }
+void reset_trigger() { board::led5::toggle(); }
 
 int main()
 {
