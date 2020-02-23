@@ -7,7 +7,8 @@
 namespace clock
 {
 
-typedef hal::timer::timer_t<2> tim;
+typedef hal::timer::timer_t<2> master;
+typedef hal::timer::timer_t<14> extra;
 
 static const uint16_t clock_multiplier = 32;                // must be power of 2!
 static const uint32_t clock_mask = clock_multiplier - 1;
@@ -69,9 +70,11 @@ struct gui_t
 
         // timer setup
 
-        tim::setup(1, bpm_arr(m_bpm));
-        tim::update_interrupt_enable();
+        master::setup(1, bpm_arr(m_bpm));
+        master::update_interrupt_enable();
         hal::nvic<interrupt::TIM2>::enable();
+
+        extra::setup(480-1, 65535); // counting up at 100kHz
     }
 
     void render()
@@ -100,7 +103,7 @@ struct gui_t
             break;
         case encoder_delta:
             m_bpm.edit(std::get<encoder_delta>(m));
-            tim::set_auto_reload_value(bpm_arr(m_bpm));
+            master::set_auto_reload_value(bpm_arr(m_bpm));
             break;
         default: ;      // unhandled message
         }
@@ -120,7 +123,7 @@ static volatile uint32_t ext_clock_count = 0;
 
 template<> void handler<interrupt::TIM2>()
 {
-    clock::tim::clear_uif();
+    clock::master::clear_uif();
     if (clock::clock_source == clock::internal)
         clock::master_tick(int_clock_count & clock::clock_mask);
     ++int_clock_count;
