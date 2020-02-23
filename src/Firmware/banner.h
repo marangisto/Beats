@@ -12,7 +12,7 @@ namespace banner
 template<typename DISPLAY>
 struct banner_t
 {
-    void setup()
+    void show()
     {
         m_line1.setup(font(), text_fg, text_bg, "Beats");
         m_line2.setup(font(), text_fg, text_bg, xstr(VERSION));
@@ -26,12 +26,10 @@ struct banner_t
         m_frame.setup(&m_column, frame_fg);
         m_frame.constrain(10, board::tft::width() - 100, 10, board::tft::height());
         m_frame.layout(50, 60);
-    }
-
-    void render()
-    {
         DISPLAY::clear(screen_bg);
         m_frame.render();
+        hal::sys_tick::delay_ms(1000);
+        DISPLAY::clear(screen_bg);
     }
 
     valuebox_t<DISPLAY, show_str>   m_line1;

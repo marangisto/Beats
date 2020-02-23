@@ -206,7 +206,16 @@ template<> void handler<interrupt::TIM6_DAC>()
 
     if (c != enc_last_count)
     {
-        mq::put(message_t().emplace<encoder_delta>(enc_last_count - c));
+        int16_t n = c - enc_last_count;
+
+        // hack around weird glitch
+
+        if (n == 64)
+            n = -1;
+        else if (n == -64)
+            n = 1;
+
+        mq::put(message_t().emplace<encoder_delta>(n));
         enc_last_count = c;
         ledY::set_ms(25);
     }
