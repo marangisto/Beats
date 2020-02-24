@@ -180,7 +180,6 @@ template<> void handler<interrupt::TIM6_DAC>()
 {
     using namespace board;
 
-    out0::set();
     aux::clear_uif();
 
     update<btn0, mq, 0>();
@@ -229,7 +228,5 @@ template<> void handler<interrupt::TIM6_DAC>()
     ledC::update();
     ledX::update();
     ledY::update();
-
-    out0::clear();
 }
 
