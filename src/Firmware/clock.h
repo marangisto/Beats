@@ -7,15 +7,19 @@
 namespace clock
 {
 
+using hal::sys_tick;
+using hal::sys_clock;
+
 typedef hal::timer::timer_t<2> master;
-typedef hal::timer::timer_t<14> extra;
+typedef hal::timer::timer_t<14> timer;
 
 static const uint16_t clock_multiplier = 32;                // must be power of 2!
 static const uint32_t clock_mask = clock_multiplier - 1;
+static const uint32_t timer_freq = 100000;                  // to measure external bpm
 
 static uint32_t bpm_arr(float bpm)
 {
-    float f1 = hal::sys_clock::freq() >> 1;
+    float f1 = sys_clock::freq() >> 1;
     float f2 = clock_multiplier * bpm / 60.0;
 
     return static_cast<uint32_t>(f1 / f2) - 1;
@@ -26,11 +30,12 @@ enum clock_source_t { internal, external };
 
 static volatile run_state_t run_state = stopped;
 static volatile clock_source_t clock_source = internal;
+static volatile float int_bpm = 0.0f, ext_bpm = 0.0f;
 
 static void master_tick(uint32_t i)
 {
     board::out1::set();
-    hal::sys_tick::delay_us(25);
+    sys_tick::delay_us(25);
     board::out1::clear();
 
     if (!i)
@@ -68,15 +73,17 @@ struct gui_t
         m_panel.render();
         m_quiet = false;
 
-        // timer setup
+        // master clock timer setup
 
         master::setup(1, bpm_arr(m_bpm));
         master::update_interrupt_enable();
         hal::nvic<interrupt::TIM2>::enable();
+ 
+        // bpm measurement timer setup
 
-        extra::setup(480-1, 65535); // counting up at 100kHz
+        timer::setup(sys_clock::freq() / timer_freq - 1, 65535);
 
-        // clock and reset interrupts
+        // external clock and reset interrupts
 
         board::clk::enable_interrupt<hal::gpio::falling_edge>();
         hal::nvic<interrupt::EXTI4_15>::enable();
@@ -100,18 +107,28 @@ struct gui_t
             case 10:    // btn A
                 run_state = run_state == stopped ? running : stopped;
                 break;
-            case 100 + internal:
-                m_mode = "intern";
+            case 100:
+                if (clock_source == internal)
+                {
+                    m_mode = "intern";
+                    m_bpm = static_cast<float>(int_bpm);
+                }
+                else
+                    m_mode = "extern";
                 break;
-            case 100 + external:
-                m_mode = "extern";
+            case 200:
+                m_bpm = static_cast<float>(ext_bpm);
                 break;
             default: ;  // unhandler button
             }
             break;
         case encoder_delta:
-            m_bpm.edit(std::get<encoder_delta>(m));
-            master::set_auto_reload_value(bpm_arr(m_bpm));
+            if (clock_source == internal)
+            {
+                m_bpm.edit(std::get<encoder_delta>(m));
+                master::set_auto_reload_value(bpm_arr(m_bpm));
+                int_bpm = m_bpm;
+            }
             break;
         default: ;      // unhandled message
         }
@@ -132,6 +149,7 @@ static volatile uint32_t ext_clock_count = 0;
 template<> void handler<interrupt::TIM2>()  // master clock
 {
     clock::master::clear_uif();
+
     if (clock::clock_source == clock::internal)
         clock::master_tick(int_clock_count & clock::clock_mask);
     ++int_clock_count;
@@ -143,13 +161,19 @@ template<> void handler<interrupt::TIM2>()  // master clock
     {
         if (ext_clock_count - ext_last_count == 0)  // see no external trigger
         {
-            clock::clock_source = clock::internal;  // switch to internal clock
-            board::mq::put(message_t().emplace<button_press>(100 + clock::internal));
+            if (clock::clock_source != clock::internal)
+            {
+                clock::clock_source = clock::internal;  // switch to internal clock
+                board::mq::put(message_t().emplace<button_press>(100));
+            }
         }
         else
         {
-            clock::clock_source = clock::external;  // switch to external clock
-            board::mq::put(message_t().emplace<button_press>(100 + clock::external));
+            if (clock::clock_source != clock::external)
+            {
+                clock::clock_source = clock::external;  // switch to external clock
+                board::mq::put(message_t().emplace<button_press>(100));
+            }
         }
 
         int_last_count = int_clock_count;
@@ -171,8 +195,26 @@ template<> void handler<interrupt::EXTI4_15>()  // external clock
     if (board::clk::interrupt_pending())
     {
         board::clk::clear_interrupt();
+
         if (clock::clock_source == clock::external)
+        {
+            static const float k = clock::timer_freq * 60.0f / clock::clock_multiplier;
+            static const uint32_t update_cycle = clock::timer_freq / 4;
+            static uint32_t elapsed = 0;
+            uint16_t n = clock::timer::count();
+
+            clock::timer::set_count(0);
+            elapsed += n;
+
+            if (elapsed > update_cycle)
+            {
+                clock::ext_bpm = n > 0 ? k / n : 0;
+                board::mq::put(message_t().emplace<button_press>(200));
+                elapsed = 0;
+            }
+
             clock::master_tick(ext_clock_count & clock::clock_mask);
+        }
         ++ext_clock_count;
     }
 }
