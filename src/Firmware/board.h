@@ -144,10 +144,6 @@ void setup()
     clk::setup();
     rst::setup();
 
-    clk::enable_interrupt<falling_edge>();
-    rst::enable_interrupt<falling_edge>();
-    hal::nvic<interrupt::EXTI4_15>::enable();
-
     enc::setup<pull_up>(1 + (64 << 1));
 
     aux::setup(48-1, 1000-1); // 1kHz
@@ -235,24 +231,5 @@ template<> void handler<interrupt::TIM6_DAC>()
     ledY::update();
 
     out0::clear();
-}
-
-template<> void handler<interrupt::EXTI4_15>()
-{
-    using namespace board;
-    extern void clock_trigger();
-    extern void reset_trigger();
-
-    bool ci = clk::interrupt_pending();
-    bool ri = rst::interrupt_pending();
-
-    if (ci)
-        clock_trigger();
-    if (ri)
-        reset_trigger();
-    if (ci)
-        clk::clear_interrupt();
-    if (ri)
-        rst::clear_interrupt();
 }
 

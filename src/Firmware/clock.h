@@ -75,6 +75,14 @@ struct gui_t
         hal::nvic<interrupt::TIM2>::enable();
 
         extra::setup(480-1, 65535); // counting up at 100kHz
+
+        // clock and reset interrupts
+
+        board::clk::enable_interrupt<hal::gpio::falling_edge>();
+        hal::nvic<interrupt::EXTI4_15>::enable();
+
+        board::rst::enable_interrupt<hal::gpio::falling_edge>();
+        hal::nvic<interrupt::EXTI2_3>::enable();
     }
 
     void render()
@@ -121,7 +129,7 @@ struct gui_t
 static volatile uint32_t int_clock_count = 0;
 static volatile uint32_t ext_clock_count = 0;
 
-template<> void handler<interrupt::TIM2>()
+template<> void handler<interrupt::TIM2>()  // master clock
 {
     clock::master::clear_uif();
     if (clock::clock_source == clock::internal)
@@ -149,15 +157,23 @@ template<> void handler<interrupt::TIM2>()
     }
 }
 
-void clock_trigger()            // EXTI for external clock
+template<> void handler<interrupt::EXTI2_3>()   // external reset
 {
-    if (clock::clock_source == clock::external)
-        clock::master_tick(ext_clock_count & clock::clock_mask);
-    ++ext_clock_count;
+    if (board::rst::interrupt_pending())
+    {
+        board::rst::clear_interrupt();
+        board::ledC::set_ms(100);
+    }
 }
 
-void reset_trigger()            // EXTI for external reset
+template<> void handler<interrupt::EXTI4_15>()  // external clock
 {
-    board::ledC::set_ms(100);
+    if (board::clk::interrupt_pending())
+    {
+        board::clk::clear_interrupt();
+        if (clock::clock_source == clock::external)
+            clock::master_tick(ext_clock_count & clock::clock_mask);
+        ++ext_clock_count;
+    }
 }
 
