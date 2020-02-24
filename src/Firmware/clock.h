@@ -12,6 +12,7 @@ using hal::sys_clock;
 
 typedef hal::timer::timer_t<2> master;
 typedef hal::timer::timer_t<14> timer;
+typedef hal::timer::timer_t<16> monitor;
 
 static const uint16_t clock_multiplier = 32;                // must be power of 2!
 static const uint32_t clock_mask = clock_multiplier - 1;
@@ -72,16 +73,23 @@ struct gui_t
         m_panel.layout(0, 0);
         m_panel.render();
         m_quiet = false;
+        int_bpm = m_bpm;
 
         // master clock timer setup
 
         master::setup(1, bpm_arr(m_bpm));
         master::update_interrupt_enable();
         hal::nvic<interrupt::TIM2>::enable();
- 
+
         // bpm measurement timer setup
 
-        timer::setup(sys_clock::freq() / timer_freq - 1, 65535);
+        timer::setup(sys_clock::freq() / timer_freq - 1, 65535);    // keep counting
+
+        // monitor timer setup
+
+        monitor::setup(sys_clock::freq() / 100000 - 1, 50000 - 1);  // 2 Hz
+        monitor::update_interrupt_enable();
+        hal::nvic<interrupt::TIM16>::enable();
 
         // external clock and reset interrupts
 
@@ -153,32 +161,32 @@ template<> void handler<interrupt::TIM2>()  // master clock
     if (clock::clock_source == clock::internal)
         clock::master_tick(int_clock_count & clock::clock_mask);
     ++int_clock_count;
+}
 
-    static uint32_t int_last_count = 0;
+template<> void handler<interrupt::TIM16>()     // monitor timer
+{
+    clock::monitor::clear_uif();
+
     static uint32_t ext_last_count = 0;
 
-    if (int_clock_count - int_last_count > 100)
+    if (ext_clock_count - ext_last_count == 0)  // see no external trigger
     {
-        if (ext_clock_count - ext_last_count == 0)  // see no external trigger
+        if (clock::clock_source != clock::internal)
         {
-            if (clock::clock_source != clock::internal)
-            {
-                clock::clock_source = clock::internal;  // switch to internal clock
-                board::mq::put(message_t().emplace<button_press>(100));
-            }
+            clock::clock_source = clock::internal;  // switch to internal clock
+            board::mq::put(message_t().emplace<button_press>(100));
         }
-        else
-        {
-            if (clock::clock_source != clock::external)
-            {
-                clock::clock_source = clock::external;  // switch to external clock
-                board::mq::put(message_t().emplace<button_press>(100));
-            }
-        }
-
-        int_last_count = int_clock_count;
-        ext_last_count = ext_clock_count;
     }
+    else
+    {
+        if (clock::clock_source != clock::external)
+        {
+            clock::clock_source = clock::external;  // switch to external clock
+            board::mq::put(message_t().emplace<button_press>(100));
+        }
+    }
+
+    ext_last_count = ext_clock_count;
 }
 
 template<> void handler<interrupt::EXTI2_3>()   // external reset
