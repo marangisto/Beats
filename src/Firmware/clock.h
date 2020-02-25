@@ -40,7 +40,7 @@ static void master_tick(uint32_t i)
     board::out1::clear();
 
     if (!i)
-        board::ledA::set_ms(run_state == running ? 50 : 3);
+        board::ledA::pulse(run_state == running ? 50 : 3);
 }
 
 struct show_bpm
@@ -194,7 +194,7 @@ template<> void handler<interrupt::EXTI2_3>()   // external reset
     if (board::rst::interrupt_pending())
     {
         board::rst::clear_interrupt();
-        board::ledC::set_ms(100);
+        board::ledC::pulse(100);
     }
 }
 
