@@ -33,16 +33,6 @@ static volatile run_state_t run_state = stopped;
 static volatile clock_source_t clock_source = internal;
 static volatile float int_bpm = 0.0f, ext_bpm = 0.0f;
 
-static void master_tick(uint32_t i)
-{
-    board::out1::set();
-    sys_tick::delay_us(25);
-    board::out1::clear();
-
-    if (!i)
-        board::ledA::pulse(run_state == running ? 50 : 3);
-}
-
 struct show_bpm
 {
     typedef float T;
@@ -151,16 +141,28 @@ struct gui_t
 
 } // namespace clock
 
-static volatile uint32_t int_clock_count = 0;
 static volatile uint32_t ext_clock_count = 0;
+
+static void tick()
+{
+    static volatile uint32_t tick_count = 0;
+    using namespace clock;
+
+    void clock_tick(uint32_t i);
+
+    if (run_state == running)
+        clock_tick(tick_count);
+    if ((tick_count & clock_mask) == (clock_multiplier >> 1))   // pulse on centre-slot
+        board::ledA::pulse(run_state == running ? 50 : 3);
+    ++tick_count;
+}
 
 template<> void handler<interrupt::TIM2>()  // master clock
 {
     clock::master::clear_uif();
 
     if (clock::clock_source == clock::internal)
-        clock::master_tick(int_clock_count & clock::clock_mask);
-    ++int_clock_count;
+        tick();
 }
 
 template<> void handler<interrupt::TIM16>()     // monitor timer
@@ -221,8 +223,9 @@ template<> void handler<interrupt::EXTI4_15>()  // external clock
                 elapsed = 0;
             }
 
-            clock::master_tick(ext_clock_count & clock::clock_mask);
+            tick();
         }
+
         ++ext_clock_count;
     }
 }

@@ -16,14 +16,14 @@ using namespace hal::gpio;
 
 typedef hal::timer::timer_t<6> aux;
 
-typedef output_t<PA3>  out0;    // channel 0 out
-typedef output_t<PF4>  out1;    // channel 1 out
-typedef output_t<PF5>  out2;    // channel 2 out
-typedef output_t<PA4>  out3;    // channel 3 out
-typedef output_t<PA5>  out4;    // channel 4 out
-typedef output_t<PB2>  out5;    // channel 5 out
-typedef output_t<PB10> out6;    // channel 6 out
-typedef output_t<PB11> out7;    // channel 7 out
+typedef pulse_t<PA3>  out0;     // channel 0 out
+typedef pulse_t<PF4>  out1;     // channel 1 out
+typedef pulse_t<PF5>  out2;     // channel 2 out
+typedef pulse_t<PA4>  out3;     // channel 3 out
+typedef pulse_t<PA5>  out4;     // channel 4 out
+typedef pulse_t<PB2>  out5;     // channel 5 out
+typedef pulse_t<PB10> out6;     // channel 6 out
+typedef pulse_t<PB11> out7;     // channel 7 out
 
 typedef pulse_t<PC13> led0;     // channel 0 led
 typedef pulse_t<PC15> led1;     // channel 1 led
@@ -158,6 +158,15 @@ template<> void handler<interrupt::TIM6_DAC>()
     using namespace board;
 
     aux::clear_uif();
+
+    out0::update();
+    out1::update();
+    out2::update();
+    out3::update();
+    out4::update();
+    out5::update();
+    out6::update();
+    out7::update();
 
     update<btn0, mq, 0>();
     update<btn1, mq, 1>();
