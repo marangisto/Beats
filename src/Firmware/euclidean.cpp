@@ -1,4 +1,4 @@
-#include "Euclidean.h"
+#include "euclidean.h"
 #if defined(TEST)
 #include <stdio.h>
 #include <utility>

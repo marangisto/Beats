@@ -2,6 +2,7 @@
 #include "board.h"
 #include "banner.h"
 #include "clock.h"
+#include "euclidean.h"
 
 static const uint16_t trigger_pulse_length = 5;
 static const uint16_t trigger_led_length = 10;
@@ -37,14 +38,55 @@ struct channel_t
     void setup()
     {
         m_trig.setup();
+
+        m_n = 8;
+        m_k = 5;
+        m_step = 0;
+        update();
     }
 
     bool fire(uint32_t i)
     {
-        return m_trig.fire(i);
+        return m_trig.fire(i) && beat();
     }
 
-    trigger_t      m_trig;
+    bool beat()
+    {
+        bool b = beat(m_step);
+
+        if (++m_step == m_n)
+            m_step = 0;
+        return b;
+    }
+
+    bool beat(unsigned i) const
+    {
+        return (m_bits & (static_cast<uint64_t>(1) << i)) != 0;
+    }
+
+    void update()
+    {
+        m_k = std::min(m_k, m_n);
+        m_bits = 0;
+
+        if (m_k == 0)
+            return;
+
+        auto xs = euclidean(m_k, m_n);
+        uint64_t bit = 1;
+
+        for (auto x : xs)
+        {
+            m_bits |= bit;
+            bit = bit << x;
+        }
+    }
+
+    volatile uint8_t    m_k;
+    volatile uint8_t    m_n;
+    volatile uint8_t    m_step;
+    volatile uint64_t   m_bits;
+    trigger_t           m_trig;
 };
 
 static channel_t chan[8];
