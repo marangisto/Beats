@@ -153,7 +153,7 @@ static void tick()
     if (run_state == running)
         clock_tick(tick_count);
     if ((tick_count & clock_mask) == 0)
-        board::ledA::pulse(run_state == running ? 50 : 3);
+        board::ledA::pulse(run_state == running ? 10 : 3);
     ++tick_count;
 }
 

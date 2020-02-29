@@ -7,7 +7,6 @@
 static const uint16_t trigger_pulse_length = 5;
 static const uint16_t trigger_led_length = 10;
 
-
 struct trigger_t
 {
     void setup() { m_rate = m_skew = m_count = 0; }
@@ -35,12 +34,12 @@ struct trigger_t
 
 struct channel_t
 {
-    void setup()
+    void setup(uint8_t k, uint8_t n)
     {
         m_trig.setup();
 
-        m_n = 8;
-        m_k = 5;
+        m_n = n;
+        m_k = k;
         m_step = 0;
         update();
     }
@@ -92,13 +91,26 @@ struct channel_t
 static channel_t chan[8];
 static const uint8_t nchan = sizeof(chan) / sizeof(*chan);
 
+template<int CH, typename LED, typename OUT>
+void process(uint32_t i)
+{
+    if (chan[CH].fire(i))
+    {
+        LED::pulse(trigger_led_length);
+        OUT::pulse(trigger_pulse_length);
+    }
+}
+
 void clock_tick(uint32_t i)
 {
-    if (chan[0].fire(i))
-    {
-        board::led0::pulse(trigger_led_length);
-        board::out0::pulse(trigger_pulse_length);
-    }
+    process<0, board::led0, board::out0>(i);
+    process<1, board::led1, board::out1>(i);
+    process<2, board::led2, board::out2>(i);
+    process<3, board::led3, board::out3>(i);
+    process<4, board::led4, board::out4>(i);
+    process<5, board::led5, board::out5>(i);
+    process<6, board::led6, board::out6>(i);
+    process<7, board::led7, board::out7>(i);
 }
 
 int main()
@@ -113,9 +125,10 @@ int main()
     gui.render();
 
     for (uint8_t i = 0; i < nchan; ++i)
-        chan[i].setup();
+        chan[i].setup(4, 16);
 
-    chan[0].m_trig.m_rate = 0;
+    chan[0].setup(3, 5);
+    chan[1].setup(4, 7);
 
     message_t m;
 
