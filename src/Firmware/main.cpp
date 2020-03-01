@@ -35,12 +35,16 @@ int main()
 {
     static banner::banner_t<board::tft> splash;
     static clock::gui_t<board::tft> gui;
+    static sequence_ui_t<board::tft> seq_ui;
 
     board::setup();
     splash.show();
 
     gui.setup();
     gui.render();
+
+    seq_ui.setup();
+    //seq_ui.render();
 
     for (uint8_t i = 0; i < nchan; ++i)
         chan[i].setup(4, 16);

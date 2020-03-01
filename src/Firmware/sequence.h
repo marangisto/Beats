@@ -2,6 +2,8 @@
 
 #include "clock.h"
 #include "euclidean.h"
+#include <widget.h>
+#include "color.h"
 
 struct sequence_t
 {
@@ -78,5 +80,83 @@ struct sequence_t
     volatile uint64_t   m_bits;     // realized bit pattern
     volatile int8_t     m_count;    // tick count for time base
     volatile uint8_t    m_step;     // current position in sequence
+};
+
+template<typename DISPLAY>
+struct sequence_ui_t: public screen_t<DISPLAY>
+{
+    enum state_t { navigating, editing };
+    typedef valuebox_t<DISPLAY, show_str> label;
+    typedef valuebox_t<DISPLAY, show_int, edit_int> intbox;
+
+    void setup()
+    {
+        m_panel.setup();
+
+        m_labels.setup();
+        l_k.setup(font(), text_fg, text_bg, "beats");
+        l_n.setup(font(), text_fg, text_bg, "length");
+        l_rotn.setup(font(), text_fg, text_bg, "rotation");
+        l_dir.setup(font(), text_fg, text_bg, "direction");
+        l_rate.setup(font(), text_fg, text_bg, "rate");
+        l_skew.setup(font(), text_fg, text_bg, "skew");
+        l_gate.setup(font(), text_fg, text_bg, "gate");
+        m_labels.append(&l_k);
+        m_labels.append(&l_n);
+        m_labels.append(&l_rotn);
+        m_labels.append(&l_dir);
+        m_labels.append(&l_rate);
+        m_labels.append(&l_skew);
+        m_labels.append(&l_gate);
+
+        m_controls.setup();
+        m_k.setup(font(), text_fg, text_bg, 1);
+        m_n.setup(font(), text_fg, text_bg, 4);
+        m_rotn.setup(font(), text_fg, text_bg, 0);
+        m_dir.setup(font(), text_fg, text_bg, 0);
+        m_rate.setup(font(), text_fg, text_bg, 0);
+        m_skew.setup(font(), text_fg, text_bg, 0);
+        m_gate.setup(font(), text_fg, text_bg, 0);
+        m_controls.append(&m_k);
+        m_controls.append(&m_n);
+        m_controls.append(&m_rotn);
+        m_controls.append(&m_dir);
+        m_controls.append(&m_rate);
+        m_controls.append(&m_skew);
+        m_controls.append(&m_gate);
+
+        m_panel.append(&m_labels);
+        m_panel.append(&m_controls);
+
+        list<ifocus*> navigation;
+
+        navigation.push_back(&m_k);
+        navigation.push_back(&m_n);
+        navigation.push_back(&m_rotn);
+        navigation.push_back(&m_dir);
+        navigation.push_back(&m_rate);
+        navigation.push_back(&m_skew);
+        navigation.push_back(&m_gate);
+
+        screen_t<DISPLAY>::setup(&m_panel, navigation, normal_cursor, active_cursor);
+    }
+
+    vertical_t<DISPLAY>     m_labels;
+    vertical_t<DISPLAY>     m_controls;
+    horizontal_t<DISPLAY>   m_panel;
+    label                   l_k;
+    label                   l_n;
+    label                   l_rotn;
+    label                   l_dir;
+    label                   l_rate;
+    label                   l_skew;
+    label                   l_gate;
+    intbox                  m_k;
+    intbox                  m_n;
+    intbox                  m_rotn;
+    intbox                  m_dir;
+    intbox                  m_rate;
+    intbox                  m_skew;
+    intbox                  m_gate;
 };
 
