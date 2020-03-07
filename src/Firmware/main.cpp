@@ -33,18 +33,15 @@ void clock_tick(uint32_t i)
 
 int main()
 {
-    static banner::banner_t<board::tft> splash;
-    static clock::gui_t<board::tft> gui;
-    static sequence_ui_t<board::tft> seq_ui;
-
     board::setup();
+
+    using namespace color;
+
+    static theme_t theme = { white, slate_gray, black, yellow, orange_red, fontlib::cmunss_20 };
+    static banner_t<board::tft> splash(theme);
+    static clock::gui_t<board::tft> gui(theme);
+
     splash.show();
-
-    gui.setup();
-    gui.render();
-
-    seq_ui.setup();
-    //seq_ui.render();
 
     for (uint8_t i = 0; i < nchan; ++i)
         chan[i].setup(4, 16);
@@ -52,6 +49,7 @@ int main()
     chan[0].setup(3, 5);
     chan[1].setup(4, 7);
 
+    window_manager wm(&gui);
     message_t m;
 
     while (board::mq::get(m)); // discard startup noise
@@ -59,9 +57,8 @@ int main()
     for (;;)
     {
         if (board::mq::get(m))
-            gui.handle_message(m);
-
-        hal::sys_tick::delay_ms(20);
+            wm.handle_message(m);
+        hal::sys_tick::delay_ms(1);
     }
 }
 

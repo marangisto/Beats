@@ -83,7 +83,7 @@ struct sequence_t
 };
 
 template<typename DISPLAY>
-struct sequence_ui_t: public screen_t<DISPLAY>
+struct sequence_ui_t: public window_t<DISPLAY>
 {
     enum state_t { navigating, editing };
     typedef valuebox_t<DISPLAY, show_str> label;
@@ -138,7 +138,7 @@ struct sequence_ui_t: public screen_t<DISPLAY>
         navigation.push_back(&m_skew);
         navigation.push_back(&m_gate);
 
-        screen_t<DISPLAY>::setup(&m_panel, navigation, normal_cursor, active_cursor);
+        window_t<DISPLAY>::setup(&m_panel, navigation, normal_cursor, active_cursor);
     }
 
     vertical_t<DISPLAY>     m_labels;

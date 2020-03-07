@@ -2,7 +2,6 @@
 
 #include <timer.h>
 #include <widget.h>
-#include "color.h"
 
 namespace clock
 {
@@ -49,20 +48,19 @@ struct edit_bpm
 };
 
 template<typename DISPLAY>
-struct gui_t
+struct gui_t: window_t<DISPLAY>
 {
-    void setup()
+    gui_t(const theme_t& t)
+        : m_bpm(t, 120.0, &m_quiet)
+        , m_mode(t, "intern", &m_quiet)
+        , m_row(&m_bpm, &m_mode)
+        , m_panel(&m_row, t.border_color)
+        , m_quiet(false)
     {
-        m_bpm.setup(font(), text_fg, text_bg, 120.0, &m_quiet);
-        m_mode.setup(font(), text_fg, text_bg, "intern", &m_quiet);
-        m_row.setup();
-        m_row.append(&m_bpm);
-        m_row.append(&m_mode);
-        m_panel.setup(&m_row, frame_fg);
-        m_panel.constrain(10, board::tft::width(), 10, board::tft::height());
-        m_panel.layout(0, 0);
-        m_panel.render();
-        m_quiet = false;
+        list<ifocus*> navigation;
+
+        navigation.push_back(&m_bpm);
+        window_t<DISPLAY>::setup(&m_panel, navigation, t);
         int_bpm = m_bpm;
 
         // master clock timer setup
@@ -95,11 +93,9 @@ struct gui_t
         m_panel.render();
     }
 
-    void handle_message(const message_t& m)
+    virtual action_t handle_message(const message_t& m)
     {
-        switch (m.index())
-        {
-        case button_press:
+        if (m.index() == button_press)
             switch (std::get<button_press>(m))
             {
             case 10:    // btn A
@@ -119,17 +115,15 @@ struct gui_t
                 break;
             default: ;  // unhandler button
             }
-            break;
-        case encoder_delta:
-            if (clock_source == internal)
-            {
-                m_bpm.edit(std::get<encoder_delta>(m));
-                master::set_auto_reload_value(bpm_arr(m_bpm));
-                int_bpm = m_bpm;
-            }
-            break;
-        default: ;      // unhandled message
+
+        if (clock_source == internal)
+        {
+            action_t a = window_t<DISPLAY>::handle_message(m);
+            master::set_auto_reload_value(bpm_arr(int_bpm = m_bpm));
+            return a;
         }
+        else
+            return action_t().emplace<no_action>(unit);
     }
 
     valuebox_t<DISPLAY, show_bpm, edit_bpm>     m_bpm;

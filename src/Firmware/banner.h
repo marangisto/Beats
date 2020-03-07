@@ -1,35 +1,32 @@
 #pragma once
 
 #include <widget.h>
-#include "color.h"
 
 #define xstr(s) str(s)
 #define str(s) #s
 
-namespace banner
-{
-
 template<typename DISPLAY>
-struct banner_t
+struct banner_t: window_t<DISPLAY>
 {
+    banner_t(const theme_t& t)
+        : m_line1(t, "Beats")
+        , m_line2(t, xstr(VERSION))
+        , m_line3(t, "Marangisto")
+        , m_line4(t, "2019-2020")
+        , m_column(&m_line1, &m_line2, &m_line3, &m_line4)
+        , m_frame(&m_column, t.border_color, 1)
+    {
+        list<ifocus*> navigation;
+        window_t<DISPLAY>::setup(&m_frame, navigation, t, rect_t(50, 50, 140, 140));
+        m_bg = t.normal_bg;
+    }
+
     void show()
     {
-        m_line1.setup(font(), text_fg, text_bg, "Beats");
-        m_line2.setup(font(), text_fg, text_bg, xstr(VERSION));
-        m_line3.setup(font(), text_fg, text_bg, "Marangisto");
-        m_line4.setup(font(), text_fg, text_bg, "2019-2020");
-        m_column.setup();
-        m_column.append(&m_line1);
-        m_column.append(&m_line2);
-        m_column.append(&m_line3);
-        m_column.append(&m_line4);
-        m_frame.setup(&m_column, frame_fg);
-        m_frame.constrain(10, board::tft::width() - 100, 10, board::tft::height());
-        m_frame.layout(50, 60);
-        DISPLAY::clear(screen_bg);
-        m_frame.render();
+        DISPLAY::clear(m_bg);
+        window_t<DISPLAY>::render();
         hal::sys_tick::delay_ms(1000);
-        DISPLAY::clear(screen_bg);
+        DISPLAY::clear(m_bg);
     }
 
     valuebox_t<DISPLAY, show_str>   m_line1;
@@ -38,7 +35,6 @@ struct banner_t
     valuebox_t<DISPLAY, show_str>   m_line4;
     vertical_t<DISPLAY>             m_column;
     border_t<DISPLAY>               m_frame;
+    color::color_t                  m_bg;
 };
-
-} // namespace banner
 

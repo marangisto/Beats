@@ -180,7 +180,9 @@ template<> void handler<interrupt::TIM6_DAC>()
     update<btnA, mq, 10>();
     update<btnB, mq, 11>();
     update<btnC, mq, 12>();
-    update<btnE, mq, 13>();
+
+    if (btnE::update_read())
+        mq::put(message_t().emplace<encoder_press>(unit));
 
     static int16_t enc_last_count = 0;
     int16_t c = static_cast<int16_t>(enc::count()) >> 1;
