@@ -88,11 +88,6 @@ struct gui_t: window_t<DISPLAY>
         hal::nvic<interrupt::EXTI2_3>::enable();
     }
 
-    void render()
-    {
-        m_panel.render();
-    }
-
     virtual action_t handle_message(const message_t& m)
     {
         if (m.index() == button_press)

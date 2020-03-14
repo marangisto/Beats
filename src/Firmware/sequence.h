@@ -5,17 +5,22 @@
 #include <widget.h>
 #include "color.h"
 
-struct sequence_t
+struct isequence
 {
-    void setup(uint8_t k, uint8_t n)
+    virtual bool fire(uint32_t i) = 0;
+};
+
+struct sequence_t: isequence
+{
+    sequence_t(const theme_t& t)
     {
-        m_n = n;
-        m_k = k;
+        m_n = 8;
+        m_k = 5;
         m_step = m_count = m_rate = m_skew = 0;
         update();
     }
 
-    bool fire(uint32_t i)
+    virtual bool fire(uint32_t i)
     {
         return tick(i) && beat();
     }
