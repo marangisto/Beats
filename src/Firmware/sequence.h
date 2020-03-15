@@ -4,46 +4,17 @@
 #include "euclidean.h"
 #include <widget.h>
 
-struct isequence
+struct sequence_t
 {
-    virtual bool fire(uint32_t i) = 0;
-};
-
-template<typename DISPLAY>
-struct sequence_t: window_t<DISPLAY>, isequence
-{
-    sequence_t(const theme_t& t)
-        : m_k(t, sizeof(m_k)), m_n(t, sizeof(m_fields)), m_rot(t, sizeof(m_frame)), m_dir(t, sizeof(rect_t))
-        , m_rate(t, 0), m_skew(t, 0), m_gate(t, 0)
+    sequence_t()
+        : m_k(4), m_n(8), m_rot(0), m_dir(0)
+        , m_rate(0), m_skew(0), m_gate(0)
         , m_count(0), m_step(0)
-        , m_fields(&m_k, &m_n, &m_rot, &m_dir, &m_rate, &m_skew, &m_gate)
-        , m_frame(&m_fields, t.border_color)
     {
-        list<ifocus*> navigation;
-
-        navigation.push_back(&m_k);
-        navigation.push_back(&m_n);
-        navigation.push_back(&m_rot);
-        navigation.push_back(&m_dir);
-        navigation.push_back(&m_rate);
-        navigation.push_back(&m_skew);
-        navigation.push_back(&m_gate);
-
-        window_t<DISPLAY>::setup(&m_frame, navigation, t, rect_t(50, 50, 140, 140));
         update();
     }
 
-    virtual action_t handle_message(const message_t& m)
-    {
-        if (m.index() == button_press && std::get<button_press>(m) < 8)
-            return action_t().emplace<pop_window>(0);
-        else
-            return window_t<DISPLAY>::handle_message(m);
-    }
-
-    // isequence
-
-    virtual bool fire(uint32_t i)
+    bool fire(uint32_t i)
     {
         return tick(i) && beat();
     }
@@ -96,11 +67,74 @@ struct sequence_t: window_t<DISPLAY>, isequence
             return (i & (clock::clock_mask >> m_rate)) == 0;
     }
 
+    // sequence parameters
+ 
+    volatile uint8_t    m_k;        // nominal beat count
+    volatile uint8_t    m_n;        // sequence length
+    volatile int8_t     m_rot;      // sequence rotation
+    volatile uint8_t    m_dir;      // sequence direction
+    volatile int8_t     m_rate;     // clock rate factor
+    volatile int8_t     m_skew;     // time shift in ticks
+    volatile uint8_t    m_gate;     // gate channel selector
+
+    // internal state variables
+
+    volatile uint64_t   m_bits;     // realized bit pattern
+    volatile int8_t     m_count;    // tick count for time base
+    volatile uint8_t    m_step;     // current position in sequence
+};
+
+template<typename DISPLAY>
+struct sequence_gui_t: window_t<DISPLAY>
+{
+    sequence_gui_t(const theme_t& t)
+        : m_k(t, 0), m_n(t, 0), m_rot(t, 0), m_dir(t, 0)
+        , m_rate(t, 0), m_skew(t, 0), m_gate(t, 0)
+        , m_fields(&m_k, &m_n, &m_rot, &m_dir, &m_rate, &m_skew, &m_gate)
+        , m_frame(&m_fields, t.border_color), m_seq(0)
+    {
+        list<ifocus*> navigation;
+
+        navigation.push_back(&m_k);
+        navigation.push_back(&m_n);
+        navigation.push_back(&m_rot);
+        navigation.push_back(&m_dir);
+        navigation.push_back(&m_rate);
+        navigation.push_back(&m_skew);
+        navigation.push_back(&m_gate);
+
+        window_t<DISPLAY>::setup(&m_frame, navigation, t, rect_t(50, 50, 140, 140));
+    }
+
+    virtual action_t handle_message(const message_t& m)
+    {
+        if (m.index() == button_press && std::get<button_press>(m) < 8)
+            return action_t().emplace<pop_window>(0);
+        else
+        {
+            action_t a = window_t<DISPLAY>::handle_message(m);
+
+            if (m_seq)
+            {
+                m_seq->m_k = m_k;
+                m_seq->m_n = m_n;
+                m_seq->update();
+            }
+
+            return a;
+        }
+    }
+
+    void bind(sequence_t *seq)
+    {
+        m_seq = seq;
+        m_k = m_seq->m_k;
+        m_n = m_seq->m_n;
+    }
+
     typedef valuebox_t<DISPLAY, show_str> label;
     typedef valuebox_t<DISPLAY, show_int, edit_int> intbox;
 
-    // sequence parameters
- 
     intbox              m_k;        // nominal beat count
     intbox              m_n;        // sequence length
     intbox              m_rot;      // sequence rotation
@@ -108,16 +142,8 @@ struct sequence_t: window_t<DISPLAY>, isequence
     intbox              m_rate;     // clock rate factor
     intbox              m_skew;     // time shift in ticks
     intbox              m_gate;     // gate channel selector
-
-    // internal state variables
-
-    volatile uint64_t   m_bits;     // realized bit pattern
-    volatile int8_t     m_count;    // tick count for time base
-    volatile uint8_t    m_step;     // current position in sequence
-
-    // passive gui elements
-
     vertical_t<DISPLAY> m_fields;
     border_t<DISPLAY>   m_frame;
+    sequence_t          *m_seq;     // current editing target
 };
 
