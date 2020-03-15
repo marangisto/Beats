@@ -51,11 +51,10 @@ template<typename DISPLAY>
 struct gui_t: window_t<DISPLAY>
 {
     gui_t(const theme_t& t)
-        : m_bpm(t, 120.0, &m_quiet)
-        , m_mode(t, "intern", &m_quiet)
+        : m_bpm(t, 120.0)
+        , m_mode(t, "intern")
         , m_row(&m_bpm, &m_mode)
         , m_panel(&m_row, t.border_color)
-        , m_quiet(false)
     {
         list<ifocus*> navigation;
 
@@ -125,7 +124,6 @@ struct gui_t: window_t<DISPLAY>
     valuebox_t<DISPLAY, show_str>               m_mode;
     horizontal_t<DISPLAY>                       m_row;
     border_t<DISPLAY>                           m_panel;
-    bool                                        m_quiet;
 };
 
 } // namespace clock

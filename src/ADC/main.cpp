@@ -11,10 +11,9 @@ int main()
 {
     board::setup();
 
-    static theme_t t = { white, slate_gray, dim_gray, yellow, orange_red, fontlib::cmunvt_28 };
-    static bool q = false;
-    static valuebox_t<board::tft, show_int> box0(t, 0, &q), box1(t, 0, &q), box2(t, 0, &q);
-    static valuebox_t<board::tft, show_int> box3(t, 0, &q), box4(t, 0, &q);
+    static theme_t t = { white, slate_gray, dim_gray, yellow, orange_red, fontlib::cmunvt_28, false };
+    static valuebox_t<board::tft, show_int> box0(t, 0), box1(t, 0), box2(t, 0);
+    static valuebox_t<board::tft, show_int> box3(t, 0), box4(t, 0);
     static vertical_t<board::tft> col(&box0, &box1, &box2, &box3, &box4);
     static border_t<board::tft> panel(&col, t.border_color);
 
