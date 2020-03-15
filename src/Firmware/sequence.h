@@ -91,7 +91,11 @@ struct sequence_gui_t: window_t<DISPLAY>
         : m_k(t, 0), m_n(t, 0), m_rot(t, 0), m_dir(t, 0)
         , m_rate(t, 0), m_skew(t, 0), m_gate(t, 0)
         , m_fields(&m_k, &m_n, &m_rot, &m_dir, &m_rate, &m_skew, &m_gate)
-        , m_frame(&m_fields, t.border_color), m_seq(0)
+        , l_k(t, "beats"), l_n(t, "steps"), l_rot(t, "rotate"), l_dir(t, "reverse")
+        , l_rate(t, "rate"), l_skew(t, "skew"), l_gate(t, "gate")
+        , m_labels(&l_k, &l_n, &l_rot, &l_dir, &l_rate, &l_skew, &l_gate)
+        , m_columns(&m_labels, &m_fields)
+        , m_frame(&m_columns, t.border_color), m_seq(0)
     {
         list<ifocus*> navigation;
 
@@ -114,10 +118,17 @@ struct sequence_gui_t: window_t<DISPLAY>
         {
             action_t a = window_t<DISPLAY>::handle_message(m);
 
+            m_k = std::min<uint8_t>(m_k, m_n);
+
             if (m_seq)
             {
                 m_seq->m_k = m_k;
                 m_seq->m_n = m_n;
+                m_seq->m_rot = m_rot;
+                m_seq->m_dir = m_dir;
+                m_seq->m_rate = m_rate;
+                m_seq->m_skew = m_skew;
+                m_seq->m_gate = m_gate;
                 m_seq->update();
             }
 
@@ -135,15 +146,24 @@ struct sequence_gui_t: window_t<DISPLAY>
     typedef valuebox_t<DISPLAY, show_str> label;
     typedef valuebox_t<DISPLAY, show_int, edit_int> intbox;
 
-    intbox              m_k;        // nominal beat count
-    intbox              m_n;        // sequence length
-    intbox              m_rot;      // sequence rotation
-    intbox              m_dir;      // sequence direction
-    intbox              m_rate;     // clock rate factor
-    intbox              m_skew;     // time shift in ticks
-    intbox              m_gate;     // gate channel selector
-    vertical_t<DISPLAY> m_fields;
-    border_t<DISPLAY>   m_frame;
-    sequence_t          *m_seq;     // current editing target
+    intbox                  m_k;        // nominal beat count
+    intbox                  m_n;        // sequence length
+    intbox                  m_rot;      // sequence rotation
+    intbox                  m_dir;      // sequence direction
+    intbox                  m_rate;     // clock rate factor
+    intbox                  m_skew;     // time shift in ticks
+    intbox                  m_gate;     // gate channel selector
+    vertical_t<DISPLAY>     m_fields;
+    label                   l_k;
+    label                   l_n;
+    label                   l_rot;
+    label                   l_dir;
+    label                   l_rate;
+    label                   l_skew;
+    label                   l_gate;
+    vertical_t<DISPLAY>     m_labels;
+    horizontal_t<DISPLAY>   m_columns;
+    border_t<DISPLAY>       m_frame;
+    sequence_t              *m_seq;     // current editing target
 };
 
