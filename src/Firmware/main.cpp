@@ -46,7 +46,7 @@ struct gui_t: iwindow
 
         if (m.index() == button_press && (i = std::get<button_press>(m)) < nchan)
         {
-            m_sequence.bind(chan[i]);
+            m_sequence.bind(i, chan[i]);
             return action_t().emplace<push_window>(&m_sequence);
         }
         else
@@ -63,7 +63,7 @@ int main()
 
     using namespace color;
 
-    static theme_t theme = { white, slate_gray, black, yellow, orange_red, fontlib::cmunss_20, false };
+    static theme_t theme = { white, slate_gray, black, yellow, orange_red, fontlib::cmunss_24, false };
     static banner_t<board::tft> splash(theme);
     static clock::gui_t<board::tft> clock(theme);
     static sequence_t seq[nchan];

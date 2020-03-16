@@ -56,7 +56,7 @@ struct sequence_t
         i += m_skew;
 
         if (m_rate < 0)             // division via counter
-            if ((i & clock::clock_mask) == 0 && --m_count <= m_rate)
+            if ((i & clock::clock_mask) == 0 && --m_count < m_rate)
             {
                 m_count = 0;
                 return true;
@@ -84,16 +84,51 @@ struct sequence_t
     volatile uint8_t    m_step;     // current position in sequence
 };
 
+struct show_dir
+{
+    typedef int T;
+    static const char *show(T x) { sprintf(tmp_buf, "%s", x ? "reverse" : "forward"); return tmp_buf; }
+};
+
+struct edit_dir
+{
+    static void edit(volatile int& x, int i) { if (i) x = !x; }
+};
+
+struct show_rate
+{
+    typedef int T;
+    static const char *show(T x)
+        {
+            if (x == 0)
+                sprintf(tmp_buf, "-");
+            else if (x < 0)
+                sprintf(tmp_buf, " / %d", 1 - x);
+            else
+                sprintf(tmp_buf, " * %d", 1 << x);
+            return tmp_buf;
+        }
+};
+
+struct edit_rate
+{
+    static void edit(volatile int& x, int i)
+    {
+        if (x + i > -99 && x + i < 5) 
+            x += i;
+    }
+};
+
 template<typename DISPLAY>
 struct sequence_gui_t: window_t<DISPLAY>
 {
     sequence_gui_t(const theme_t& t)
-        : m_k(t, 0), m_n(t, 0), m_rot(t, 0), m_dir(t, 0)
+        : m_chan(t, 0), m_k(t, 0), m_n(t, 0), m_rot(t, 0), m_dir(t, 0)
         , m_rate(t, 0), m_skew(t, 0), m_gate(t, 0)
-        , m_fields(&m_k, &m_n, &m_rot, &m_dir, &m_rate, &m_skew, &m_gate)
-        , l_k(t, "beats"), l_n(t, "steps"), l_rot(t, "rotate"), l_dir(t, "reverse")
-        , l_rate(t, "rate"), l_skew(t, "skew"), l_gate(t, "gate")
-        , m_labels(&l_k, &l_n, &l_rot, &l_dir, &l_rate, &l_skew, &l_gate)
+        , m_fields(&m_chan, &m_k, &m_n, &m_rot, &m_dir, &m_rate, &m_skew, &m_gate)
+        , l_chan(t, "channel"), l_k(t, "beats"), l_n(t, "steps"), l_rot(t, "rotate")
+        , l_dir(t, "order") , l_rate(t, "rate"), l_skew(t, "skew"), l_gate(t, "gate")
+        , m_labels(&l_chan, &l_k, &l_n, &l_rot, &l_dir, &l_rate, &l_skew, &l_gate)
         , m_columns(&m_labels, &m_fields)
         , m_frame(&m_columns, t.border_color), m_seq(0)
     {
@@ -136,24 +171,34 @@ struct sequence_gui_t: window_t<DISPLAY>
         }
     }
 
-    void bind(sequence_t *seq)
+    void bind(int chan, sequence_t *seq)
     {
+        m_chan = chan;
         m_seq = seq;
         m_k = m_seq->m_k;
         m_n = m_seq->m_n;
+        m_rot = m_seq->m_rot;
+        m_dir = m_seq->m_dir;
+        m_rate = m_seq->m_rate;
+        m_skew = m_seq->m_skew;
+        m_gate = m_seq->m_gate;
     }
 
     typedef valuebox_t<DISPLAY, show_str> label;
     typedef valuebox_t<DISPLAY, show_int, edit_int> intbox;
+    typedef valuebox_t<DISPLAY, show_dir, edit_dir> dirbox;
+    typedef valuebox_t<DISPLAY, show_rate, edit_rate> ratebox;
 
+    intbox                  m_chan;     // channel number (no navigation)
     intbox                  m_k;        // nominal beat count
     intbox                  m_n;        // sequence length
     intbox                  m_rot;      // sequence rotation
-    intbox                  m_dir;      // sequence direction
-    intbox                  m_rate;     // clock rate factor
+    dirbox                  m_dir;      // sequence direction
+    ratebox                 m_rate;     // clock rate factor
     intbox                  m_skew;     // time shift in ticks
     intbox                  m_gate;     // gate channel selector
     vertical_t<DISPLAY>     m_fields;
+    label                   l_chan;
     label                   l_k;
     label                   l_n;
     label                   l_rot;
