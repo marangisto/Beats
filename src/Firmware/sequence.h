@@ -148,11 +148,12 @@ struct sequence_gui_t: window_t<DISPLAY>
     virtual action_t handle_message(const message_t& m)
     {
         if (m.index() == button_press && std::get<button_press>(m) < 8)
-            return action_t().emplace<pop_window>(0);
+            return action_t().emplace<pop_window_message>(m);
         else
         {
             action_t a = window_t<DISPLAY>::handle_message(m);
 
+            m_n = std::min<uint8_t>(m_n, 64);
             m_k = std::min<uint8_t>(m_k, m_n);
 
             if (m_seq)
@@ -173,7 +174,7 @@ struct sequence_gui_t: window_t<DISPLAY>
 
     void bind(int chan, sequence_t *seq)
     {
-        m_chan = chan;
+        m_chan = chan + 1;  // one-based for display
         m_seq = seq;
         m_k = m_seq->m_k;
         m_n = m_seq->m_n;
@@ -186,12 +187,13 @@ struct sequence_gui_t: window_t<DISPLAY>
 
     typedef valuebox_t<DISPLAY, show_str> label;
     typedef valuebox_t<DISPLAY, show_int, edit_int> intbox;
+    typedef valuebox_t<DISPLAY, show_unsigned, edit_unsigned> unsignedbox;
     typedef valuebox_t<DISPLAY, show_dir, edit_dir> dirbox;
     typedef valuebox_t<DISPLAY, show_rate, edit_rate> ratebox;
 
     intbox                  m_chan;     // channel number (no navigation)
-    intbox                  m_k;        // nominal beat count
-    intbox                  m_n;        // sequence length
+    unsignedbox             m_k;        // nominal beat count
+    unsignedbox             m_n;        // sequence length
     intbox                  m_rot;      // sequence rotation
     dirbox                  m_dir;      // sequence direction
     ratebox                 m_rate;     // clock rate factor
