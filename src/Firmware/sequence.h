@@ -7,7 +7,7 @@
 struct sequence_t
 {
     sequence_t()
-        : m_k(4), m_n(8), m_rot(0), m_dir(0)
+        : m_k(0), m_n(8), m_rot(0), m_dir(0)
         , m_rate(0), m_skew(0), m_gate(0)
         , m_count(0), m_step(0)
     {
@@ -147,8 +147,15 @@ struct sequence_gui_t: window_t<DISPLAY>
 
     virtual action_t handle_message(const message_t& m)
     {
-        if (m.index() == button_press && std::get<button_press>(m) < 8)
-            return action_t().emplace<pop_window_message>(m);
+        uint8_t i;
+
+        if (m.index() == button_press && (i = std::get<button_press>(m)) < 8)
+        {
+            if (i == m_chan - 1)
+                return action_t().emplace<pop_window>(0);
+            else
+                return action_t().emplace<pop_window_message>(m);
+        }
         else
         {
             action_t a = window_t<DISPLAY>::handle_message(m);
