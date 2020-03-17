@@ -50,11 +50,12 @@ struct edit_bpm
 template<typename DISPLAY>
 struct gui_t: window_t<DISPLAY>
 {
-    gui_t(const theme_t& t)
+    gui_t(const theme_t& t, iwidget *body)
         : m_bpm(t, 120.0)
         , m_mode(t, "intern")
-        , m_row(&m_bpm, &m_mode)
-        , m_panel(&m_row, t.border_color)
+        , m_top(&m_bpm, &m_mode)
+        , m_rows(&m_top, body)
+        , m_panel(&m_rows, t.border_color)
     {
         list<ifocus*> navigation;
 
@@ -122,7 +123,8 @@ struct gui_t: window_t<DISPLAY>
 
     valuebox_t<DISPLAY, show_bpm, edit_bpm>     m_bpm;
     valuebox_t<DISPLAY, show_str>               m_mode;
-    horizontal_t<DISPLAY>                       m_row;
+    horizontal_t<DISPLAY>                       m_top;
+    vertical_t<DISPLAY>                         m_rows;
     border_t<DISPLAY>                           m_panel;
 };
 
