@@ -41,7 +41,7 @@ struct sequence_t
     {
         bool b = beat(m_step);
 
-        if (++m_step == m_n)
+        if (++m_step >= m_n)        // >= not to miss stop when reducing steps
             m_step = 0;
         return b;
     }
