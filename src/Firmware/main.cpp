@@ -2,6 +2,7 @@
 #include "board.h"
 #include "banner.h"
 #include "sequence.h"
+#include "graphic.h"
 
 static const uint16_t trigger_pulse_length = 5;
 static const uint16_t trigger_led_length = 10;
@@ -30,40 +31,6 @@ void clock_tick(uint32_t i)
     clock_tick<6, board::led6, board::out6>(i);
     clock_tick<7, board::led7, board::out7>(i);
 }
-
-template<typename DISPLAY>
-struct graphic_t: iwidget
-{
-    // iwidget
-
-    virtual void size(pixel_t& w, bool& fill_h, pixel_t& h, bool& fill_v)
-    {
-        w = h = 2;  // any small number
-        fill_h = fill_v = true;
-    }
-
-    virtual void size(pixel_t w, pixel_t h)
-    {
-        m_rect.w = w;
-        m_rect.h = h;
-    }
-
-    virtual void place(pixel_t x, pixel_t y)
-    {
-        m_rect.x = x;
-        m_rect.y = y;
-    }
-
-    virtual void render()
-    {
-        graphics::pen_t<DISPLAY> pen(color::black);
-
-        for (pixel_t i = 0; i < 3; ++i)
-            pen.rectangle(m_rect.x + i, m_rect.y + i, m_rect.w - (i << 1), m_rect.h - (i << 1));
-    }
-
-    rect_t  m_rect;
-};
 
 struct gui_t: iwindow
 {
@@ -99,7 +66,7 @@ int main()
 
     static theme_t theme = { white, slate_gray, black, yellow, orange_red, fontlib::cmunss_24, false };
     static banner_t<board::tft> splash(theme);
-    static graphic_t<board::tft> graphic;
+    static graphic_t<board::tft> graphic(chan, nchan);
     static clock::gui_t<board::tft> clock(theme, &graphic);
     static sequence_t seq[nchan];
     static gui_t gui(theme, &clock);
