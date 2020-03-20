@@ -17,7 +17,7 @@ void clock_tick(uint32_t i, uint32_t& bits)
     {
         LED::pulse(trigger_led_length);
         OUT::pulse(trigger_pulse_length);
-        bits |= 1 << i;
+        bits |= 1 << CH;
     }
 }
 
@@ -44,26 +44,61 @@ struct gui_t: iwindow
         : m_canvas(theme)
         , m_clock(theme, &m_canvas)
         , m_sequence(theme)
-    {}
+        , m_theme(theme)
+    {
+        rect_t r = m_canvas.rect();
 
-    virtual void render() { m_clock.render(); }
+        m_bw = 4 * r.w / (5 * nchan + 1);
+        m_x0 = m_bw / 4;
+        m_dx = m_bw + m_x0;
+    }
+
+    virtual void render()
+    {
+        m_clock.render();
+        update_graphic = true;
+    }
 
     virtual action_t handle_message(const message_t& m)
     {
         uint8_t i;
 
-        if (m.index() == button_press && (i = std::get<button_press>(m)) < nchan)
+        switch (m.index())
         {
-            m_sequence.bind(i, chan[i]);
-            return action_t().emplace<push_window>(&m_sequence);
-        }
-        else
+        case aux_data:
+            {
+                pixel_t x = m_x0;
+                pixel_t y = m_canvas.scroll(-1);
+                uint32_t bits = std::get<aux_data>(m);
+                graphics::pen_t<board::tft> pen(m_theme.normal_fg);
+
+                for (unsigned i = 0; i < nchan; ++i, x += m_dx)
+                {
+                    pen.move_to(x, y);
+                    pen.set_color((bits & (1 << i)) ? m_theme.normal_fg : m_theme.normal_bg);
+                    pen.rel_line_to(m_bw, 0);
+                }
+            }
+            return action_t().emplace<no_action>(unit);
+        case button_press:
+            if ((i = std::get<button_press>(m)) < nchan)
+            {
+                update_graphic = false;
+                m_canvas.scroll_off();
+                m_sequence.bind(i, chan[i]);
+                return action_t().emplace<push_window>(&m_sequence);
+            }
+            // fall throguh to default
+        default:
             return m_clock.handle_message(m);
+        }
     }
 
     scroll_region_t<board::tft> m_canvas;
     clock::gui_t<board::tft>    m_clock;
     sequence_gui_t<board::tft>  m_sequence;
+    const theme_t&              m_theme;
+    pixel_t                     m_x0, m_dx, m_bw;
 };
 
 int main()
