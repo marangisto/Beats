@@ -67,15 +67,28 @@ struct gui_t: iwindow
         {
         case aux_data:
             {
+                using namespace color;
+
                 static const color::color_t fg[nchan] =
-                    { color::black
-                    , color::brown
-                    , color::red
-                    , color::orange
-                    , color::yellow
-                    , color::green
-                    , color::blue
-                    , color::violet
+                    { black
+                    , brown
+                    , red
+                    , orange
+                    , yellow
+                    , green
+                    , blue
+                    , violet
+                    };
+
+                static const color::color_t bg[nchan] =
+                    { grey(128)
+                    , grey(118)
+                    , grey(108)
+                    , grey(98)
+                    , grey(88)
+                    , grey(78)
+                    , grey(68)
+                    , grey(58)
                     };
 
                 pixel_t x = m_x0;
@@ -86,7 +99,7 @@ struct gui_t: iwindow
                 for (unsigned i = 0; i < nchan; ++i, x += m_dx)
                 {
                     pen.move_to(x, y);
-                    pen.set_color((bits & (1 << i)) ? fg[i] : m_theme.normal_bg);
+                    pen.set_color((bits & (1 << i)) ? fg[i] : bg[i]);
                     pen.rel_line_to(m_bw, 0);
                 }
             }
