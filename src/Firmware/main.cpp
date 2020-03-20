@@ -41,10 +41,9 @@ void clock_tick(uint32_t i)
 struct gui_t: iwindow
 {
     gui_t(const theme_t& theme)
-        : m_canvas(theme)
+        : m_canvas(color::black)
         , m_clock(theme, &m_canvas)
         , m_sequence(theme)
-        , m_theme(theme)
     {
         rect_t r = m_canvas.rect();
 
@@ -94,7 +93,7 @@ struct gui_t: iwindow
                 pixel_t x = m_x0;
                 pixel_t y = m_canvas.scroll(-1);
                 uint32_t bits = std::get<aux_data>(m);
-                graphics::pen_t<board::tft> pen(m_theme.normal_fg);
+                graphics::pen_t<board::tft> pen(fg[0]);
 
                 for (unsigned i = 0; i < nchan; ++i, x += m_dx)
                 {
@@ -121,7 +120,6 @@ struct gui_t: iwindow
     scroll_region_t<board::tft> m_canvas;
     clock::gui_t<board::tft>    m_clock;
     sequence_gui_t<board::tft>  m_sequence;
-    const theme_t&              m_theme;
     pixel_t                     m_x0, m_dx, m_bw;
 };
 
