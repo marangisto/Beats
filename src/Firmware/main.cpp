@@ -67,6 +67,17 @@ struct gui_t: iwindow
         {
         case aux_data:
             {
+                static const color::color_t fg[nchan] =
+                    { color::black
+                    , color::brown
+                    , color::red
+                    , color::orange
+                    , color::yellow
+                    , color::green
+                    , color::blue
+                    , color::violet
+                    };
+
                 pixel_t x = m_x0;
                 pixel_t y = m_canvas.scroll(-1);
                 uint32_t bits = std::get<aux_data>(m);
@@ -75,7 +86,7 @@ struct gui_t: iwindow
                 for (unsigned i = 0; i < nchan; ++i, x += m_dx)
                 {
                     pen.move_to(x, y);
-                    pen.set_color((bits & (1 << i)) ? m_theme.normal_fg : m_theme.normal_bg);
+                    pen.set_color((bits & (1 << i)) ? fg[i] : m_theme.normal_bg);
                     pen.rel_line_to(m_bw, 0);
                 }
             }

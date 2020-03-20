@@ -151,7 +151,7 @@ struct sequence_gui_t: window_t<DISPLAY>
 
         if (m.index() == button_press && (i = std::get<button_press>(m)) < 8)
         {
-            if (i == m_chan - 1)
+            if (i == m_chan)
                 return action_t().emplace<pop_window>(0);
             else
                 return action_t().emplace<pop_window_message>(m);
@@ -181,7 +181,7 @@ struct sequence_gui_t: window_t<DISPLAY>
 
     void bind(int chan, sequence_t *seq)
     {
-        m_chan = chan + 1;  // one-based for display
+        m_chan = chan;
         m_seq = seq;
         m_k = m_seq->m_k;
         m_n = m_seq->m_n;
