@@ -130,7 +130,7 @@ struct sequence_gui_t: window_t<DISPLAY>
         , l_dir(t, "order") , l_rate(t, "rate"), l_skew(t, "skew"), l_gate(t, "gate")
         , m_labels(&l_chan, &l_k, &l_n, &l_rot, &l_dir, &l_rate, &l_skew, &l_gate)
         , m_columns(&m_labels, &m_fields)
-        , m_frame(&m_columns, t.border_color), m_seq(0)
+        , m_frame(&m_columns, t.border_color, 3), m_seq(0)
     {
         list<ifocus*> navigation;
 
@@ -142,7 +142,7 @@ struct sequence_gui_t: window_t<DISPLAY>
         navigation.push_back(&m_skew);
         navigation.push_back(&m_gate);
 
-        window_t<DISPLAY>::setup(&m_frame, navigation, t, rect_t(50, 40, 140, 140));
+        window_t<DISPLAY>::setup(&m_frame, navigation, t, rect_t(50, 35, 140, 140));
     }
 
     virtual action_t handle_message(const message_t& m)
@@ -179,7 +179,7 @@ struct sequence_gui_t: window_t<DISPLAY>
         }
     }
 
-    void bind(int chan, sequence_t *seq)
+    void bind(int chan, sequence_t *seq, color::color_t c)
     {
         m_chan = chan;
         m_seq = seq;
@@ -190,6 +190,7 @@ struct sequence_gui_t: window_t<DISPLAY>
         m_rate = m_seq->m_rate;
         m_skew = m_seq->m_skew;
         m_gate = m_seq->m_gate;
+        m_frame.set_color(c);
     }
 
     typedef valuebox_t<DISPLAY, show_str> label;

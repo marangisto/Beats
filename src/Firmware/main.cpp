@@ -92,22 +92,15 @@ struct gui_t: window_t<DISPLAY>
     {
         uint8_t i;
 
+        static const color::color_t fg[nchan] =
+            { color::black, color::wheat, color::red, color::orange
+            , color::yellow, color::green, color::deep_sky_blue, color::violet
+            };
+
         switch (m.index())
         {
         case aux_data:
             {
-                using namespace color;
-
-                static const color::color_t fg[nchan] =
-                    { black, wheat, red, orange
-                    , yellow, green, deep_sky_blue, violet
-                    };
-
-                static const color::color_t bg[nchan] =
-                    { grey(128), grey(118), grey(108), grey(98)
-                    , grey(88), grey(78), grey(68), grey(58)
-                    };
-
                 pixel_t x = m_x0;
                 pixel_t y = m_canvas.scroll(-1);
                 uint32_t bits = std::get<aux_data>(m);
@@ -116,7 +109,7 @@ struct gui_t: window_t<DISPLAY>
                 for (unsigned i = 0; i < nchan; ++i, x += m_dx)
                 {
                     pen.move_to(x, y);
-                    pen.set_color((bits & (1 << i)) ? fg[i] : bg[i]);
+                    pen.set_color((bits & (1 << i)) ? fg[i] : color::grey(128 - i * 10));
                     pen.rel_line_to(m_bw, 0);
                 }
             }
@@ -126,7 +119,7 @@ struct gui_t: window_t<DISPLAY>
             {
                 update_graphic = false;
                 m_canvas.scroll_off();
-                m_sequence.bind(i, chan[i]);
+                m_sequence.bind(i, chan[i], fg[i]);
                 return action_t().emplace<push_window>(&m_sequence);
             }
             // fall throguh to default
