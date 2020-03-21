@@ -38,6 +38,7 @@ void clock_tick(uint32_t i)
         board::mq::put(message_t().emplace<aux_data>(bits));
 }
 
+template<typename DISPLAY>
 struct gui_t: iwindow
 {
     gui_t(const theme_t& theme)
@@ -79,7 +80,7 @@ struct gui_t: iwindow
                 pixel_t x = m_x0;
                 pixel_t y = m_canvas.scroll(-1);
                 uint32_t bits = std::get<aux_data>(m);
-                graphics::pen_t<board::tft> pen(fg[0]);
+                graphics::pen_t<DISPLAY> pen(fg[0]);
 
                 for (unsigned i = 0; i < nchan; ++i, x += m_dx)
                 {
@@ -103,10 +104,10 @@ struct gui_t: iwindow
         }
     }
 
-    scroll_region_t<board::tft> m_canvas;
-    clock::gui_t<board::tft>    m_clock;
-    sequence_gui_t<board::tft>  m_sequence;
-    pixel_t                     m_x0, m_dx, m_bw;
+    scroll_region_t<DISPLAY> m_canvas;
+    clock::gui_t<DISPLAY>    m_clock;
+    sequence_gui_t<DISPLAY>  m_sequence;
+    pixel_t                  m_x0, m_dx, m_bw;
 };
 
 int main()
@@ -118,7 +119,7 @@ int main()
     static theme_t theme = { white, slate_gray, black, yellow, orange_red, fontlib::cmunss_24, false };
     static banner_t<board::tft> splash(theme);
     static sequence_t seq[nchan];
-    static gui_t gui(theme);
+    static gui_t<board::tft> gui(theme);
 
     splash.show();
 
