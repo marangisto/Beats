@@ -69,25 +69,13 @@ struct gui_t: iwindow
                 using namespace color;
 
                 static const color::color_t fg[nchan] =
-                    { black
-                    , brown
-                    , red
-                    , orange
-                    , yellow
-                    , green
-                    , blue
-                    , violet
+                    { black, peru, red, orange
+                    , yellow, green, blue, violet
                     };
 
                 static const color::color_t bg[nchan] =
-                    { grey(128)
-                    , grey(118)
-                    , grey(108)
-                    , grey(98)
-                    , grey(88)
-                    , grey(78)
-                    , grey(68)
-                    , grey(58)
+                    { grey(128), grey(118), grey(108), grey(98)
+                    , grey(88), grey(78), grey(68), grey(58)
                     };
 
                 pixel_t x = m_x0;
