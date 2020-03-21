@@ -142,7 +142,7 @@ struct sequence_gui_t: window_t<DISPLAY>
         navigation.push_back(&m_skew);
         navigation.push_back(&m_gate);
 
-        window_t<DISPLAY>::setup(&m_frame, navigation, t, rect_t(50, 50, 140, 140));
+        window_t<DISPLAY>::setup(&m_frame, navigation, t, rect_t(50, 40, 140, 140));
     }
 
     virtual action_t handle_message(const message_t& m)

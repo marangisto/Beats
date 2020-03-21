@@ -39,13 +39,38 @@ void clock_tick(uint32_t i)
 }
 
 template<typename DISPLAY>
+struct toolbar_t: horizontal_t<DISPLAY>
+{
+    toolbar_t(const theme_t& t)
+        : horizontal_t<DISPLAY>(&m_boxa, &m_boxb, &m_boxc)
+        , m_boxa(t, "start")
+        , m_boxb(t, "beats")
+        , m_boxc(t, "menu")
+    {}
+
+    list<ifocus*> navigation()
+    {
+        list<ifocus*> navigation;
+
+        //navigation.push_back(&m_boxb);
+        return navigation;
+    }
+
+    valuebox_t<DISPLAY, show_str>   m_boxa;
+    valuebox_t<DISPLAY, show_str>   m_boxb;
+    valuebox_t<DISPLAY, show_str>   m_boxc;
+};
+
+template<typename DISPLAY>
 struct gui_t: window_t<DISPLAY>
 {
     gui_t(const theme_t& theme)
-        : m_clock(theme)
-        , m_filler(filler_t<DISPLAY>::horizontal, color::grey(28), 2)
+        : m_clock(theme, m_toolbar.m_boxa)
+        , m_filler(filler_t<DISPLAY>::horizontal, color::grey(18), 3)
         , m_canvas(color::black)
-        , m_panel(&m_clock, &m_filler, &m_canvas)
+        , m_filler2(filler_t<DISPLAY>::horizontal, color::grey(18), 3)
+        , m_toolbar(theme)
+        , m_panel(&m_clock, &m_filler, &m_canvas, &m_filler2, &m_toolbar)
         , m_sequence(theme)
     {
         m_bw = 28;          // sorry, magic number that 'work'
@@ -118,6 +143,8 @@ struct gui_t: window_t<DISPLAY>
     clock::clock_t<DISPLAY>  m_clock;
     filler_t<DISPLAY>        m_filler;
     scroll_region_t<DISPLAY> m_canvas;
+    filler_t<DISPLAY>        m_filler2;
+    toolbar_t<DISPLAY>       m_toolbar;
     vertical_t<DISPLAY>      m_panel;
     sequence_gui_t<DISPLAY>  m_sequence;
     pixel_t                  m_x0, m_dx, m_bw;

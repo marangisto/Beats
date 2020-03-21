@@ -50,10 +50,11 @@ struct edit_bpm
 template<typename DISPLAY>
 struct clock_t: horizontal_t<DISPLAY>
 {
-    clock_t(const theme_t& t)
+    clock_t(const theme_t& t, valuebox_t<DISPLAY, show_str>& start)
         : horizontal_t<DISPLAY>(&m_bpm, &m_mode)
         , m_bpm(t, 120.0)
         , m_mode(t, "internal")
+        , m_start(start)
     {
         int_bpm = m_bpm;
 
@@ -97,6 +98,7 @@ struct clock_t: horizontal_t<DISPLAY>
             {
             case 10:    // btn A
                 run_state = run_state == stopped ? running : stopped;
+                m_start = run_state == stopped ? "start" : "stop";
                 break;
             case 100:
                 if (clock_source == internal)
@@ -119,6 +121,7 @@ struct clock_t: horizontal_t<DISPLAY>
 
     valuebox_t<DISPLAY, show_bpm, edit_bpm>     m_bpm;
     valuebox_t<DISPLAY, show_str>               m_mode;
+    valuebox_t<DISPLAY, show_str>&              m_start;
 };
 
 } // namespace clock
