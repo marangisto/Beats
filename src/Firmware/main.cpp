@@ -39,23 +39,27 @@ void clock_tick(uint32_t i)
 }
 
 template<typename DISPLAY>
-struct gui_t: iwindow
+struct gui_t: window_t<DISPLAY>
 {
     gui_t(const theme_t& theme)
-        : m_filler(filler_t<DISPLAY>::horizontal, color::grey(28), 2)
+        : m_clock(theme)
+        , m_filler(filler_t<DISPLAY>::horizontal, color::grey(28), 2)
         , m_canvas(color::black)
-        , m_panel(&m_filler, &m_canvas)
-        , m_clock(theme, &m_panel)
+        , m_panel(&m_clock, &m_filler, &m_canvas)
         , m_sequence(theme)
     {
         m_bw = 28;          // sorry, magic number that 'work'
         m_x0 = 1;
         m_dx = m_bw + 2;
+
+        list<ifocus*> navigation = m_clock.navigation();
+
+        window_t<DISPLAY>::setup(&m_panel, navigation, theme);
     }
 
     virtual void render()
     {
-        m_clock.render();
+        m_panel.render();
         update_graphic = true;
     }
 
@@ -70,8 +74,8 @@ struct gui_t: iwindow
                 using namespace color;
 
                 static const color::color_t fg[nchan] =
-                    { black, peru, red, orange
-                    , yellow, green, blue, violet
+                    { black, wheat, red, orange
+                    , yellow, green, deep_sky_blue, violet
                     };
 
                 static const color::color_t bg[nchan] =
@@ -102,14 +106,19 @@ struct gui_t: iwindow
             }
             // fall throguh to default
         default:
-            return m_clock.handle_message(m);
+            {
+                action_t a = window_t<DISPLAY>::handle_message(m);
+
+                m_clock.handle_message(m);
+                return a;
+            }
         }
     }
 
+    clock::clock_t<DISPLAY>  m_clock;
     filler_t<DISPLAY>        m_filler;
     scroll_region_t<DISPLAY> m_canvas;
     vertical_t<DISPLAY>      m_panel;
-    clock::gui_t<DISPLAY>    m_clock;
     sequence_gui_t<DISPLAY>  m_sequence;
     pixel_t                  m_x0, m_dx, m_bw;
 };

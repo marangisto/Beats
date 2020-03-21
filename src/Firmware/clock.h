@@ -48,19 +48,13 @@ struct edit_bpm
 };
 
 template<typename DISPLAY>
-struct gui_t: window_t<DISPLAY>
+struct clock_t: horizontal_t<DISPLAY>
 {
-    gui_t(const theme_t& t, iwidget *body)
-        : m_bpm(t, 120.0)
+    clock_t(const theme_t& t)
+        : horizontal_t<DISPLAY>(&m_bpm, &m_mode)
+        , m_bpm(t, 120.0)
         , m_mode(t, "internal")
-        , m_top(&m_bpm, &m_mode)
-        , m_rows(&m_top, body)
-        , m_panel(&m_rows, t.border_color)
     {
-        list<ifocus*> navigation;
-
-        navigation.push_back(&m_bpm);
-        window_t<DISPLAY>::setup(&m_panel, navigation, t);
         int_bpm = m_bpm;
 
         // master clock timer setup
@@ -88,7 +82,15 @@ struct gui_t: window_t<DISPLAY>
         hal::nvic<interrupt::EXTI2_3>::enable();
     }
 
-    virtual action_t handle_message(const message_t& m)
+    list<ifocus*> navigation()
+    {
+        list<ifocus*> navigation;
+
+        navigation.push_back(&m_bpm);
+        return navigation;
+    }
+
+    void handle_message(const message_t& m)
     {
         if (m.index() == button_press)
             switch (std::get<button_press>(m))
@@ -112,20 +114,11 @@ struct gui_t: window_t<DISPLAY>
             }
 
         if (clock_source == internal)
-        {
-            action_t a = window_t<DISPLAY>::handle_message(m);
             master::set_auto_reload_value(bpm_arr(int_bpm = m_bpm));
-            return a;
-        }
-        else
-            return action_t().emplace<no_action>(unit);
     }
 
     valuebox_t<DISPLAY, show_bpm, edit_bpm>     m_bpm;
     valuebox_t<DISPLAY, show_str>               m_mode;
-    horizontal_t<DISPLAY>                       m_top;
-    vertical_t<DISPLAY>                         m_rows;
-    border_t<DISPLAY>                           m_panel;
 };
 
 } // namespace clock
