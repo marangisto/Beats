@@ -73,9 +73,9 @@ struct gui_t: window_t<DISPLAY>
         , m_panel(&m_clock, &m_filler, &m_canvas, &m_filler2, &m_toolbar)
         , m_sequence(theme)
     {
-        m_bw = 28;          // sorry, magic number that 'work'
-        m_x0 = 1;
-        m_dx = m_bw + 2;
+        m_bw = 29;          // sorry, magic number that 'work'
+        m_x0 = 0;
+        m_dx = m_bw + 1;
 
         list<ifocus*> navigation = m_clock.navigation();
 
@@ -85,6 +85,20 @@ struct gui_t: window_t<DISPLAY>
     virtual void render()
     {
         m_panel.render();
+
+        graphics::pen_t<DISPLAY> pen(color::black);
+        m_canvas.scroll(-1);
+        rect_t r = m_canvas.rect();
+        pixel_t x = m_x0;
+
+        for (unsigned i = 0; i < nchan; ++i, x += m_dx)
+        {
+            pen.set_color(color::grey(128 - i * 10));
+            pen.fill_rectangle(r.x + x, r.y, m_bw, r.h);
+            pen.set_color(color::black);
+            pen.fill_rectangle(r.x + x + m_bw, r.y, m_dx - m_bw, r.h);
+        }
+
         update_graphic = true;
     }
 
@@ -110,7 +124,7 @@ struct gui_t: window_t<DISPLAY>
                 {
                     pen.move_to(x, y);
                     pen.set_color((bits & (1 << i)) ? fg[i] : color::grey(128 - i * 10));
-                    pen.rel_line_to(m_bw, 0);
+                    pen.rel_line_to(m_bw - 1, 0);
                 }
             }
             return action_t().emplace<no_action>(unit);

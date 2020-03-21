@@ -130,7 +130,7 @@ struct sequence_gui_t: window_t<DISPLAY>
         , l_dir(t, "order") , l_rate(t, "rate"), l_skew(t, "skew"), l_gate(t, "gate")
         , m_labels(&l_chan, &l_k, &l_n, &l_rot, &l_dir, &l_rate, &l_skew, &l_gate)
         , m_columns(&m_labels, &m_fields)
-        , m_frame(&m_columns, t.border_color, 3), m_seq(0)
+        , m_frame(&m_columns, t.border_color, 2), m_seq(0)
     {
         list<ifocus*> navigation;
 
