@@ -7,7 +7,7 @@
 struct sequence_t
 {
     sequence_t()
-        : m_k(0), m_n(8), m_rot(0), m_dir(0)
+        : m_k(0), m_n(4), m_rot(0), m_dir(0)
         , m_rate(0), m_skew(0), m_gate(0)
         , m_count(0), m_step(0)
     {
@@ -48,7 +48,14 @@ struct sequence_t
 
     bool beat(unsigned step) const  // is there a beat on given step
     {
-        return (m_bits & (static_cast<uint64_t>(1) << step)) != 0;
+        int n = m_n, i = static_cast<int>(step) - m_rot;
+
+        if (i < 0)
+            i += n;
+        else if (i >= n)
+            i -= n;
+
+        return (m_bits & (static_cast<uint64_t>(1) << i)) != 0;
     }
 
     bool tick(uint32_t i)           // clock tick under rate and skew
