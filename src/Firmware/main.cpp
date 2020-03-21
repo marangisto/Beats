@@ -45,9 +45,9 @@ struct gui_t: iwindow
         , m_clock(theme, &m_canvas)
         , m_sequence(theme)
     {
-        m_bw = 23;          // sorry, magic number that 'work'
-        m_x0 = 0;
-        m_dx = m_bw + 8;
+        m_bw = 28;          // sorry, magic number that 'work'
+        m_x0 = 1;
+        m_dx = m_bw + 2;
     }
 
     virtual void render()
