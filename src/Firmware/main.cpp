@@ -42,8 +42,10 @@ template<typename DISPLAY>
 struct gui_t: iwindow
 {
     gui_t(const theme_t& theme)
-        : m_canvas(color::black)
-        , m_clock(theme, &m_canvas)
+        : m_filler(filler_t<DISPLAY>::horizontal, color::grey(28), 2)
+        , m_canvas(color::black)
+        , m_panel(&m_filler, &m_canvas)
+        , m_clock(theme, &m_panel)
         , m_sequence(theme)
     {
         m_bw = 28;          // sorry, magic number that 'work'
@@ -104,7 +106,9 @@ struct gui_t: iwindow
         }
     }
 
+    filler_t<DISPLAY>        m_filler;
     scroll_region_t<DISPLAY> m_canvas;
+    vertical_t<DISPLAY>      m_panel;
     clock::gui_t<DISPLAY>    m_clock;
     sequence_gui_t<DISPLAY>  m_sequence;
     pixel_t                  m_x0, m_dx, m_bw;
@@ -116,7 +120,7 @@ int main()
 
     using namespace color;
 
-    static theme_t theme = { white, slate_gray, black, yellow, orange_red, fontlib::cmunss_24, false };
+    static theme_t theme = { white, grey(48), black, yellow, orange_red, fontlib::cmunss_24, false };
     static banner_t<board::tft> splash(theme);
     static sequence_t seq[nchan];
     static gui_t<board::tft> gui(theme);
