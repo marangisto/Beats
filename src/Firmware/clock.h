@@ -52,7 +52,7 @@ struct gui_t: window_t<DISPLAY>
 {
     gui_t(const theme_t& t, iwidget *body)
         : m_bpm(t, 120.0)
-        , m_mode(t, "intern")
+        , m_mode(t, "internal")
         , m_top(&m_bpm, &m_mode)
         , m_rows(&m_top, body)
         , m_panel(&m_rows, t.border_color)
@@ -99,11 +99,11 @@ struct gui_t: window_t<DISPLAY>
             case 100:
                 if (clock_source == internal)
                 {
-                    m_mode = "intern";
+                    m_mode = "internal";
                     m_bpm = static_cast<float>(int_bpm);
                 }
                 else
-                    m_mode = "extern";
+                    m_mode = "external";
                 break;
             case 200:
                 m_bpm = static_cast<float>(ext_bpm);
