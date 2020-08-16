@@ -1,8 +1,5 @@
 #include <gpio.h>
 
-using hal::sys_tick;
-using namespace hal::gpio;
-
 typedef input_t<PB7> clk;       // clock input
 typedef input_t<PD2> rst;       // reset input
 
@@ -41,8 +38,8 @@ int main()
 
     clk::enable_interrupt<falling_edge>();
     rst::enable_interrupt<falling_edge>();
-    hal::nvic<interrupt::EXTI2_3>::enable();
-    hal::nvic<interrupt::EXTI4_15>::enable();
+    interrupt::set<interrupt::EXTI2_3>();
+    interrupt::set<interrupt::EXTI4_15>();
 
     for (;;) ;
 }
