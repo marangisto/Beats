@@ -66,9 +66,9 @@ struct gui_t: window_t<DISPLAY>
 {
     gui_t(const theme_t& theme)
         : m_clock(theme, m_toolbar.m_boxa)
-        , m_filler(filler_t<DISPLAY>::horizontal, color::grey(18), 3)
+        , m_filler(filler_t<DISPLAY>::horizontal, grey(18), 3)
         , m_canvas(color::black)
-        , m_filler2(filler_t<DISPLAY>::horizontal, color::grey(18), 3)
+        , m_filler2(filler_t<DISPLAY>::horizontal, grey(18), 3)
         , m_toolbar(theme)
         , m_panel(&m_clock, &m_filler, &m_canvas, &m_filler2, &m_toolbar)
         , m_sequence(theme)
@@ -86,14 +86,14 @@ struct gui_t: window_t<DISPLAY>
     {
         m_panel.render();
 
-        graphics::pen_t<DISPLAY> pen(color::black);
+        pen_t<DISPLAY> pen(color::black);
         m_canvas.scroll(-1);
         rect_t r = m_canvas.rect();
         pixel_t x = m_x0;
 
         for (unsigned i = 0; i < nchan; ++i, x += m_dx)
         {
-            pen.set_color(color::grey(128 - i * 10));
+            pen.set_color(grey(128 - i * 10));
             pen.fill_rectangle(r.x + x, r.y, m_bw, r.h);
             pen.set_color(color::black);
             pen.fill_rectangle(r.x + x + m_bw, r.y, m_dx - m_bw, r.h);
@@ -106,7 +106,7 @@ struct gui_t: window_t<DISPLAY>
     {
         uint8_t i;
 
-        static const color::color_t fg[nchan] =
+        static const color_t fg[nchan] =
             { color::black, color::wheat, color::red, color::orange
             , color::yellow, color::green, color::deep_sky_blue, color::violet
             };
@@ -118,12 +118,12 @@ struct gui_t: window_t<DISPLAY>
                 pixel_t x = m_x0;
                 pixel_t y = m_canvas.scroll(-1);
                 uint32_t bits = std::get<aux_data>(m);
-                graphics::pen_t<DISPLAY> pen(fg[0]);
+                pen_t<DISPLAY> pen(fg[0]);
 
                 for (unsigned i = 0; i < nchan; ++i, x += m_dx)
                 {
                     pen.move_to(x, y);
-                    pen.set_color((bits & (1 << i)) ? fg[i] : color::grey(128 - i * 10));
+                    pen.set_color((bits & (1 << i)) ? fg[i] : grey(128 - i * 10));
                     pen.rel_line_to(m_bw - 1, 0);
                 }
             }
@@ -182,7 +182,7 @@ int main()
     {
         if (board::mq::get(m))
             wm.handle_message(m);
-        hal::sys_tick::delay_ms(1);
+        sys_tick::delay_ms(1);
     }
 }
 

@@ -6,12 +6,9 @@
 namespace clock
 {
 
-using hal::sys_tick;
-using hal::sys_clock;
-
-typedef hal::timer::timer_t<2> master;
-typedef hal::timer::timer_t<14> timer;
-typedef hal::timer::timer_t<16> monitor;
+typedef tim_t<2> master;
+typedef tim_t<14> timer;
+typedef tim_t<16> monitor;
 
 static const uint16_t clock_multiplier = 32;                // must be power of 2!
 static const uint32_t clock_mask = clock_multiplier - 1;
@@ -61,8 +58,8 @@ struct clock_t: horizontal_t<DISPLAY>
         // master clock timer setup
 
         master::setup(1, bpm_arr(m_bpm));
-        master::update_interrupt_enable();
-        hal::nvic<interrupt::TIM2>::enable();
+        master::enable_update_interrupt();
+        interrupt::set<interrupt::TIM2>();
 
         // bpm measurement timer setup
 
@@ -71,16 +68,16 @@ struct clock_t: horizontal_t<DISPLAY>
         // monitor timer setup
 
         monitor::setup(sys_clock::freq() / 100000 - 1, 50000 - 1);  // 2 Hz
-        monitor::update_interrupt_enable();
-        hal::nvic<interrupt::TIM16>::enable();
+        monitor::enable_update_interrupt();
+        interrupt::set<interrupt::TIM16>();
 
         // external clock and reset interrupts
 
-        board::clk::enable_interrupt<hal::gpio::falling_edge>();
-        hal::nvic<interrupt::EXTI4_15>::enable();
+        board::clk::enable_interrupt<falling_edge>();
+        interrupt::set<interrupt::EXTI4_15>();
 
-        board::rst::enable_interrupt<hal::gpio::falling_edge>();
-        hal::nvic<interrupt::EXTI2_3>::enable();
+        board::rst::enable_interrupt<falling_edge>();
+        interrupt::set<interrupt::EXTI2_3>();
     }
 
     list<ifocus*> navigation()
@@ -144,7 +141,7 @@ static void tick()
 
 template<> void handler<interrupt::TIM2>()  // master clock
 {
-    clock::master::clear_uif();
+    clock::master::clear_update_interrupt_flag();
 
     if (clock::clock_source == clock::internal)
         tick();
@@ -152,7 +149,7 @@ template<> void handler<interrupt::TIM2>()  // master clock
 
 template<> void handler<interrupt::TIM16>()     // monitor timer
 {
-    clock::monitor::clear_uif();
+    clock::monitor::clear_update_interrupt_flag();
 
     static uint32_t ext_last_count = 0;
 

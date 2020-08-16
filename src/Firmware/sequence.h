@@ -186,7 +186,7 @@ struct sequence_gui_t: window_t<DISPLAY>
         }
     }
 
-    void bind(int chan, sequence_t *seq, color::color_t c)
+    void bind(int chan, sequence_t *seq, color_t c)
     {
         m_chan = chan;
         m_seq = seq;

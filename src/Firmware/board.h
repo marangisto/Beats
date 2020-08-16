@@ -12,9 +12,7 @@
 
 namespace board
 {
-using namespace hal::gpio;
-
-typedef hal::timer::timer_t<6> aux;
+typedef tim_t<6> aux;
 
 typedef pulse_t<PA3>  out0;     // channel 0 out
 typedef pulse_t<PF4>  out1;     // channel 1 out
@@ -58,13 +56,13 @@ typedef button_t<PB6>  btnE;    // encoder button
 typedef input_t<PB7> clk;       // clock input
 typedef input_t<PD2> rst;       // reset input
 
-typedef hal::timer::encoder_t<3, PA6, PA7> enc;
-typedef st7789::st7789_t<1, PB3, PB5, PB4, PC12> tft;
+typedef encoder_t<3, PA6, PA7> enc;
+typedef st7789_t<1, PB3, PB5, PB4, PC12> tft;
 typedef fifo_t<message_t, 0, 8> mq;
 
-typedef hal::adc::adc_t<1> adc;
-typedef hal::dma::dma_t<1> adc_dma;
-typedef hal::timer::timer_t<15> adc_tim;
+typedef adc_t<1> adc;
+typedef dma_t<1> adc_dma;
+typedef tim_t<15> adc_tim;
 
 static const uint8_t adc_dma_ch = 1;
 static const uint8_t adc_buf_size = 4;
@@ -124,10 +122,10 @@ void setup()
     enc::setup<pull_up>(1 + (64 << 1));
 
     aux::setup(48-1, 1000-1); // 1kHz
-    aux::update_interrupt_enable();
-    hal::nvic<interrupt::TIM6_DAC>::enable();
+    aux::enable_update_interrupt();
+    interrupt::set<interrupt::TIM6_DAC>();
 
-    adc_tim::setup(1, (hal::sys_clock::freq() >> 1) / adc_sample_freq - 1);
+    adc_tim::setup(1, (sys_clock::freq() >> 1) / adc_sample_freq - 1);
     adc_tim::master_mode<adc_tim::mm_update>();
     adc_dma::setup();
     adc::setup();
@@ -137,7 +135,7 @@ void setup()
     adc::enable();
     adc::start_conversion();
 
-    tft::setup<hal::spi::fpclk_2>();
+    tft::setup<fpclk_2>();
 }
 
 } // namespace board
@@ -157,7 +155,7 @@ template<> void handler<interrupt::TIM6_DAC>()
 {
     using namespace board;
 
-    aux::clear_uif();
+    aux::clear_update_interrupt_flag();
 
     out0::update();
     out1::update();

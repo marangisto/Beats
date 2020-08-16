@@ -25,7 +25,7 @@ struct banner_t: window_t<DISPLAY>
     {
         DISPLAY::clear(m_bg);
         window_t<DISPLAY>::render();
-        hal::sys_tick::delay_ms(1000);
+        sys_tick::delay_ms(1000);
         DISPLAY::clear(m_bg);
     }
 
@@ -35,6 +35,6 @@ struct banner_t: window_t<DISPLAY>
     valuebox_t<DISPLAY, show_str>   m_line4;
     vertical_t<DISPLAY>             m_column;
     border_t<DISPLAY>               m_frame;
-    color::color_t                  m_bg;
+    color_t                         m_bg;
 };
 
