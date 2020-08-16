@@ -1,8 +1,5 @@
 #include <gpio.h>
 
-using hal::sys_tick;
-using namespace hal::gpio;
-
 typedef output_t<PB8> led_a;
 typedef output_t<PB9> led_b;
 typedef output_t<PA3> trig_1;
