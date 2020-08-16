@@ -1,0 +1,4 @@
+BASE_DIR=../../..
+LIBS=corona
+MCU=STM32F051R8Tx
+DEFS=BEATS
