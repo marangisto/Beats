@@ -4,20 +4,16 @@
 //
 ////
 
+#include <gpio.h>
 #include <spi.h>
 #include <st7789.h>
-#include <gpio.h>
 #include <draw.h>
 #include <cstdlib>
 
-using namespace hal::spi;
-using namespace st7789;
-using namespace gpio;
-using namespace graphics;
 using namespace color;
 
-typedef st7789::st7789_t<1, PB3, PB5, PB4, PC12> display;
-static const spi::spi_clock_divider_t display_spi_prescale = spi::fpclk_2;
+typedef st7789_t<1, PB3, PB5, PB4, PC12> display;
+static const spi_clock_divider_t display_spi_prescale = fpclk_2;
 
 static void squares()
 {
