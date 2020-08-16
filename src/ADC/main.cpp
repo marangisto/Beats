@@ -1,7 +1,6 @@
 #include "../Firmware/board.h"
 #include <widget.h>
 
-using hal::sys_tick;
 using namespace color;
 
 void clock_trigger() { board::led5::toggle(); }
@@ -16,10 +15,11 @@ int main()
     static valuebox_t<board::tft, show_int> box3(t, 0), box4(t, 0);
     static vertical_t<board::tft> col(&box0, &box1, &box2, &box3, &box4);
     static border_t<board::tft> panel(&col, t.border_color);
+    static window_t<board::tft> window;
+    list<ifocus*> navigation;
 
-    panel.constrain(10, board::tft::width() - 150, 10, board::tft::height());
-    panel.place(75, 60);
-    panel.render();
+    window.setup(&panel, navigation, t);
+    window.render();
 
     for (;;)
     {
